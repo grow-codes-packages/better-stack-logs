@@ -1,0 +1,75 @@
+# Better Stack Logs fixture for grow-codes-packages/better-stack-logs (GRO-1377, sdk-kit SPEC §8).
+#
+# There is no self-hosted Better Stack. Grow stacks use the SaaS (catalog image: "local intake stub
+# (contract-verified) + optional live Better Stack source"), so the Docker suite runs the sdk-kit
+# intake + ClickHouse-SQL stub (sdk-kit/harness/betterstack-stub, Python standard library only) on
+# the stock python image. Two listeners, like the real service's two hosts:
+#   http://better-stack-logs:8080   ingesting host  (POST /, Bearer source token)
+#   http://better-stack-logs:8123   SQL query host  (ClickHouse HTTP interface, HTTP Basic)
+# No host ports. Test containers need only GROW_BETTER_STACK_LOGS_URL=http://better-stack-logs:8080
+# plus /bootstrap/env (tokens, query host + credentials, collection names).
+#
+# The image is built from the stub's own Dockerfile (FROM python:3.13.18-alpine3.24, uid 10001).
+# BETTERSTACK_STUB_DIR: the stub folder. In a generated repo sdk-kit copies it to
+# docker/betterstack-stub/, so the default works there; prep/verify runs point it at sdk-kit directly.
+# All credentials below are synthetic test values for a container that is never published.
+
+x-stub-env: &stub-env
+  BETTERSTACK_STUB_INGEST_PORT: "8080"
+  BETTERSTACK_STUB_QUERY_PORT: "8123"
+  # token=collection pairs; collection = Better Stack "table name" (t<team>_<source>), tables are
+  # remote(<collection>_logs), remote(<collection>_spans), s3Cluster(primary, <collection>_s3).
+  BETTERSTACK_STUB_SOURCES: sdk-source-token-a=t1_grow_sdk,sdk-source-token-b=t1_grow_sdk_other
+  BETTERSTACK_STUB_QUERY_USER: sdk-query-user
+  BETTERSTACK_STUB_QUERY_PASSWORD: sdk-query-password
+
+services:
+  service:   # service under test (harness contract); reachable as `better-stack-logs`
+    networks:
+      default:
+        aliases: [better-stack-logs]
+    image: ${BETTERSTACK_STUB_IMAGE:-grow-sdk-betterstack-stub:local}
+    build:
+      context: ${BETTERSTACK_STUB_DIR:-./betterstack-stub}
+    pull_policy: build
+    environment:
+      <<: *stub-env
+    healthcheck:
+      # stub.py --healthcheck probes GET /__stub/health on both listeners (exit 0/1).
+      test: ["CMD", "python", "/app/stub.py", "--healthcheck"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+      start_interval: 1s
+    mem_limit: 256m
+    init: true
+
+  bootstrap:
+    image: curlimages/curl:8.23.0
+    user: "0:0"               # the named volume is root-owned
+    depends_on:
+      service:
+        condition: service_healthy
+    environment:
+      BS_INGEST_URL: http://better-stack-logs:8080
+      BS_QUERY_URL: http://better-stack-logs:8123
+      BS_SOURCE_TOKEN: sdk-source-token-a
+      BS_SOURCE_TABLE: t1_grow_sdk
+      BS_SOURCE_TOKEN_B: sdk-source-token-b
+      BS_SOURCE_TABLE_B: t1_grow_sdk_other
+      BS_QUERY_USERNAME: sdk-query-user
+      BS_QUERY_PASSWORD: sdk-query-password
+    volumes:
+      - ./bootstrap:/scripts:ro
+      - bootstrap:/bootstrap
+    entrypoint: ["/bin/sh", "/scripts/bootstrap.sh"]
+    healthcheck:
+      test: ["CMD", "test", "-s", "/bootstrap/env"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: "no"
+
+volumes:
+  bootstrap: {}
