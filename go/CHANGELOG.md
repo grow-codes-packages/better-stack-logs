@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/grow-codes-packages/better-stack-logs/compare/go/v0.1.1...go/v0.1.2) (2026-11-19)
+
+
+### Dependencies
+
+* **go:** Bump go.opentelemetry.io/proto/otlp from 1.11.0 to 1.11.1 in /go in the go group across 1 directory ([#7](https://github.com/grow-codes-packages/better-stack-logs/issues/7)) ([4091f3a](https://github.com/grow-codes-packages/better-stack-logs/commit/4091f3a7f2c587da67ec12de7b25f7efd06d7849))
+
 ## [0.1.1](https://github.com/grow-codes-packages/better-stack-logs/compare/go/v0.1.0...go/v0.1.1) (2026-11-19)
 
 
