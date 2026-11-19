@@ -40,6 +40,7 @@ all = [
   "grow-better-stack-logs[structlog]",
 ]
 dev = [
+  "twine>=6.1",
   "build>=1.2",
   "hatchling>=1.25",
   "pytest>=8.3",

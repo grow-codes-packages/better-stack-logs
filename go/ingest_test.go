@@ -221,7 +221,7 @@ func TestNewLogClient(t *testing.T) {
 }
 
 func TestNewLogClientWithInvalidBatch(t *testing.T) {
-	ts := newTestServer(t, status(http.StatusAccepted))
+	ts := newTestServer(t, statusHandler(http.StatusAccepted))
 	c := newTestClient(t, ts.URL, nil)
 	if _, err := c.NewLogClient(LogClientOptions{Batch: BatchOptions{MaxQueueSize: -1}}); err == nil {
 		t.Fatal("invalid batch options must fail")
