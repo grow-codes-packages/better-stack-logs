@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/grow-codes-packages/better-stack-logs/compare/java-v0.1.1...java-v0.1.2) (2026-11-19)
+
+
+### Dependencies
+
+* **java:** Bump the java group across 2 directories with 12 updates ([#14](https://github.com/grow-codes-packages/better-stack-logs/issues/14)) ([fabbbff](https://github.com/grow-codes-packages/better-stack-logs/commit/fabbbffd736e70ff3ca6bbf4bd182a346f0091b8))
+
 ## [0.1.1](https://github.com/grow-codes-packages/better-stack-logs/compare/java-v0.1.0...java-v0.1.1) (2026-11-19)
 
 
