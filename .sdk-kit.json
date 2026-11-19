@@ -82,7 +82,7 @@
     },
     {
       "path": ".github/workflows/release.yml",
-      "sha256": "3ec2aab75c861055fd299648200fbe4b53b2e53eba1e55ce3cfc225b7c73d126",
+      "sha256": "63c47a01f423182c1e93b554c017e9074cbb8e643b5aa127808819354dd0dc4b",
       "generated": true
     },
     {
@@ -92,7 +92,7 @@
     },
     {
       "path": ".release-please-manifest.json",
-      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "sha256": "8bb8eecb8fb9f763e2a20886e5ed9cc77e6c8f2ead86f3ef0291e54d9ae75250",
       "generated": false
     },
     {
@@ -691,7 +691,7 @@
     },
     {
       "path": "java/Makefile",
-      "sha256": "4b52acce29935760554dfcd97d7e54e1ea7b523af47c992ba115407e02018249",
+      "sha256": "61586f077f2dcc5986263836a15a9df077e71f418a51ec041766662285bc271a",
       "generated": false
     },
     {
@@ -1376,7 +1376,7 @@
     },
     {
       "path": "python/src/grow_better_stack_logs/_version.py",
-      "sha256": "326553d84c140a43dd807c7e7ffd9a77a0b48f004b8de216cf29e7959ca2ed0e",
+      "sha256": "a77fa54f51fdf50ebdb72c3a3172a1bc4dbc18af2125c9b46a337b7947d33a8e",
       "generated": false
     },
     {
@@ -1831,7 +1831,7 @@
     },
     {
       "path": "typescript/Makefile",
-      "sha256": "42509aee443690b1436794a2cea3f88f90720b5cf6a6706bcae4e653f9e2ed55",
+      "sha256": "8d7180377c688b9ac77c1ae75adbe9ab5680fcea9d2a4869cd40342eb8747c78",
       "generated": false
     },
     {
