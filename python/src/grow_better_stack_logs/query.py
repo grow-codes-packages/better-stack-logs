@@ -57,6 +57,7 @@ __all__ = [
     "log_record_from_row",
     "parse_datetime",
     "parse_rows",
+    "escape_param_value",
     "sql_string",
 ]
 
@@ -159,6 +160,19 @@ def parse_datetime(value: Any) -> datetime | None:
     return parsed.astimezone(timezone.utc)
 
 
+_PARAM_ESCAPES = str.maketrans({"\\": "\\\\", "\t": "\\t", "\n": "\\n", "\r": "\\r"})
+
+
+def escape_param_value(value: str) -> str:
+    """Escape a ``param_<name>`` value for ClickHouse (DECISIONS §12).
+
+    ClickHouse parses query parameter values in the escaped (TabSeparated) text format, so a
+    backslash becomes ``\\\\``, tab ``\\t``, newline ``\\n`` and carriage return ``\\r``. Applied to
+    every ``str`` parameter by :meth:`BetterStackQuery.query`.
+    """
+    return value.translate(_PARAM_ESCAPES)
+
+
 def _param_text(name: str, value: QueryParamValue) -> str:
     if value is None:
         return "\\N"
@@ -170,7 +184,9 @@ def _param_text(name: str, value: QueryParamValue) -> str:
         return value.isoformat()
     if isinstance(value, float) and not math.isfinite(value):
         raise ValidationError(f"query: parameter {name} must be a finite number")
-    if isinstance(value, (str, int, float)):
+    if isinstance(value, str):
+        return escape_param_value(value)
+    if isinstance(value, (int, float)):
         return str(value)
     raise ValidationError(f"query: parameter {name} has an unsupported type")
 

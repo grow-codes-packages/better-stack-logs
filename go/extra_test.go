@@ -9,7 +9,7 @@ import (
 
 func TestQueryRawAndSettings(t *testing.T) {
 	srv := newSQLServer(t, func(w http.ResponseWriter, r *http.Request, _ string, _ int) {
-		if r.URL.Query().Get("max_execution_time") != "30" {
+		if r.URL.Query().Get("max_execution_time") != "30" || r.URL.Query().Get("param_t") != "t1_x_logs" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -18,7 +18,7 @@ func TestQueryRawAndSettings(t *testing.T) {
 	q := newQueryClient(t, srv.URL, nil).Query()
 	text, err := q.QueryRaw(t.Context(), "SELECT count() AS c FROM remote({t:Identifier}) FORMAT CSVWithNames", map[string]any{"t": "t1_x_logs"},
 		QueryOptions{Settings: map[string]any{"max_execution_time": 30}})
-	if err != nil || text != "c\n5\n" || srv.sql(0) != "SELECT count() AS c FROM remote(t1_x_logs) FORMAT CSVWithNames" {
+	if err != nil || text != "c\n5\n" || srv.sql(0) != "SELECT count() AS c FROM remote({t:Identifier}) FORMAT CSVWithNames" {
 		t.Fatalf("raw %q %v %q", text, err, srv.sql(0))
 	}
 	if _, err := q.QueryRaw(t.Context(), "SELECT 1", nil, QueryOptions{Settings: map[string]any{"bad name": 1}}); !errors.Is(err, ErrValidation) {
@@ -30,9 +30,6 @@ func TestQueryRawAndSettings(t *testing.T) {
 	if _, err := q.QueryRaw(t.Context(), " ", nil); !errors.Is(err, ErrValidation) {
 		t.Fatalf("empty: %v", err)
 	}
-	if _, err := q.QueryRaw(t.Context(), "SELECT {x:String}", nil); !errors.Is(err, ErrValidation) {
-		t.Fatalf("missing param: %v", err)
-	}
 }
 
 func TestNewIngestExporterAndSendEvents(t *testing.T) {
@@ -42,7 +39,7 @@ func TestNewIngestExporterAndSendEvents(t *testing.T) {
 	if c.Exporter().Encoding() != EncodingJSON {
 		t.Fatal("default encoding")
 	}
-	e, err := c.NewIngestExporter(IngestExporterOptions{Encoding: EncodingNDJSON, MaxRequestBytes: 1 << 20, MaxRecordBytes: 300})
+	e, err := c.NewExporter(IngestExporterOptions{Encoding: EncodingNDJSON, MaxRequestBytes: 1 << 20, MaxRecordBytes: 300})
 	if err != nil || e.Encoding() != EncodingNDJSON {
 		t.Fatalf("exporter %v", err)
 	}
@@ -51,7 +48,7 @@ func TestNewIngestExporterAndSendEvents(t *testing.T) {
 		t.Fatalf("record limit %+v %v", res, err)
 	}
 	for _, bad := range []IngestExporterOptions{{Encoding: "xml"}, {MaxRequestBytes: MaxRequestBytes + 1}, {MaxRecordBytes: -1}} {
-		if _, err := c.NewIngestExporter(bad); !errors.Is(err, ErrValidation) {
+		if _, err := c.NewExporter(bad); !errors.Is(err, ErrValidation) {
 			t.Errorf("%+v: %v", bad, err)
 		}
 	}
@@ -91,7 +88,7 @@ func TestNewIngestExporterAndSendEvents(t *testing.T) {
 	}
 
 	q := newQueryClient(t, ts.URL, nil)
-	if _, err := q.NewIngestExporter(IngestExporterOptions{}); !errors.Is(err, ErrConfig) {
+	if _, err := q.NewExporter(IngestExporterOptions{}); !errors.Is(err, ErrConfig) {
 		t.Fatalf("no ingest: %v", err)
 	}
 	if err := (&IngestExporter{client: q}).SendEvents(t.Context(), events, SendEventsOptions{}); !errors.Is(err, ErrConfig) {

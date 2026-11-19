@@ -2,7 +2,6 @@ package betterstack
 
 import (
 	"encoding/json"
-	"errors"
 	"math"
 	"strings"
 	"testing"
@@ -16,58 +15,43 @@ func marshalJSONForTest(v any) (string, error) {
 
 type textValue struct{}
 
-func (textValue) String() string { return "txt" }
+func (textValue) String() string { return "t\\x" }
 
-func TestBindParams(t *testing.T) {
-	ts := time.Date(2026, 11, 18, 21, 0, 0, 123456789, time.UTC)
-	params := map[string]any{
-		"s": `a'b\c`, "i": 3, "t": "t1_x_logs", "tm": ts, "d": ts, "n": nil, "b": true,
-		"arr": []string{"x", "y"}, "f": 1.5,
+func TestEscapeParamValue(t *testing.T) {
+	cases := map[string]string{
+		`plain 'quoted' "text"`: `plain 'quoted' "text"`,
+		"a\\b\tc\nd\re":         `a\\b\tc\nd\re`,
+		`\N`:                    `\\N`,
 	}
-	sql := "SELECT {s:String}, {i:UInt32}, '{s:String}', `{s:String}`, \"{s:String}\" FROM remote({t:Identifier}) " +
-		"WHERE dt > {tm:DateTime64(6)} AND day = {d:Date} AND x = {n:Nullable(String)} AND y = {b:Bool} " +
-		"AND z IN {arr:Array(String)} AND f = { f : Float64 } -- {s:String}\n/* {s:String} */ AND {not a placeholder} 'it''s {s:String}' /* open"
-	got, err := BindParams(sql, params)
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := `SELECT 'a\'b\\c', 3, '{s:String}', ` + "`{s:String}`" + `, "{s:String}" FROM remote(t1_x_logs) ` +
-		`WHERE dt > '2026-11-18 21:00:00.123456' AND day = '2026-11-18' AND x = NULL AND y = true ` +
-		`AND z IN ['x', 'y'] AND f = 1.5 -- {s:String}` + "\n" + `/* {s:String} */ AND {not a placeholder} 'it''s {s:String}' /* open`
-	if got != want {
-		t.Fatalf("got\n%s\nwant\n%s", got, want)
-	}
-	if got, _ := BindParams("x -- {s:String}", params); got != "x -- {s:String}" {
-		t.Fatalf("comment at end: %q", got)
-	}
-	if got, _ := BindParams("'unterminated {s:String}", params); got != "'unterminated {s:String}" {
-		t.Fatalf("unterminated: %q", got)
-	}
-	if _, err := BindParams("{t:Identifier}", map[string]any{"t": "x; DROP"}); !errors.Is(err, ErrValidation) {
-		t.Fatalf("identifier: %v", err)
-	}
-	if _, err := BindParams("{m:String}", map[string]any{"m": map[string]any{}}); !errors.Is(err, ErrValidation) {
-		t.Fatalf("map: %v", err)
-	}
-	if _, err := BindParams("{a:Array(String)}", map[string]any{"a": []any{map[string]any{}}}); !errors.Is(err, ErrValidation) {
-		t.Fatalf("array of maps: %v", err)
+	for in, want := range cases {
+		if got := EscapeParamValue(in); got != want {
+			t.Errorf("%q: got %q want %q", in, got, want)
+		}
 	}
 }
 
-func TestFormatSQLValue(t *testing.T) {
-	cases := map[string]any{
-		"-7": int64(-7), "8": int32(8), "9": uint64(9), "10": uint(10), "11": int8(11), "12": uint16(12),
-		"0.5": float32(0.5), "nan": math.NaN(), "inf": math.Inf(1), "-inf": math.Inf(-1),
-		"'42'": json.Number("42"), "'txt'": textValue{}, "false": false, "[1, 2]": [2]int{1, 2},
+func TestParamText(t *testing.T) {
+	ts := time.Date(2026, 11, 18, 21, 0, 0, 123456789, time.FixedZone("x", 3600))
+	cases := []struct {
+		v    any
+		want string
+	}{
+		{nil, `\N`}, {`C:\tmp`, `C:\\tmp`}, {true, "true"}, {false, "false"},
+		{-7, "-7"}, {int8(8), "8"}, {int16(9), "9"}, {int32(10), "10"}, {int64(11), "11"},
+		{uint(12), "12"}, {uint8(13), "13"}, {uint16(14), "14"}, {uint32(15), "15"}, {uint64(16), "16"},
+		{float32(0.5), "0.5"}, {1.25, "1.25"}, {json.Number("42"), "42"}, {textValue{}, `t\\x`},
+		{ts, "2026-11-18 20:00:00.123456"},
 	}
-	for want, v := range cases {
-		got, err := FormatSQLValue(v, "String")
-		if err != nil || got != want {
-			t.Errorf("%v: %q %v", v, got, err)
+	for _, tc := range cases {
+		got, err := paramText(tc.v)
+		if err != nil || got != tc.want {
+			t.Errorf("%#v: got %q %v want %q", tc.v, got, err, tc.want)
 		}
 	}
-	if got, _ := FormatSQLValue("x", "LowCardinality(Nullable(String))"); got != "'x'" {
-		t.Fatal(got)
+	for _, bad := range []any{math.NaN(), math.Inf(1), float32(math.Inf(-1)), map[string]any{}, []string{"x"}} {
+		if _, err := paramText(bad); err == nil {
+			t.Errorf("%#v: want error", bad)
+		}
 	}
 	if QuoteSQLString(`'\`) != `'\'\\'` || !strings.HasPrefix(FormatSQLTime(time.Unix(0, 0)), "1970-01-01 00:00:00.000000") {
 		t.Fatal("quote")

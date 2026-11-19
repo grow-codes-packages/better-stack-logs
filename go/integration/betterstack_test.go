@@ -142,6 +142,9 @@ func TestCore(t *testing.T) {
 	if _, err := c.Ping(t.Context()); !errors.Is(err, betterstack.ErrCancelled) {
 		t.Fatalf("ping after close %v", err)
 	}
+	if _, err := c.NewLogClient(betterstack.LogClientOptions{}); !errors.Is(err, betterstack.ErrCancelled) {
+		t.Fatalf("log client after close %v", err)
+	}
 }
 
 func TestAuthErrors(t *testing.T) {
@@ -225,7 +228,7 @@ func TestExporterAndOTLP(t *testing.T) {
 	if raw[0].Attributes["custom"].(map[string]any)["k"] != "v" {
 		t.Fatalf("raw event %+v", raw[0])
 	}
-	mp, err := c.NewIngestExporter(betterstack.IngestExporterOptions{Encoding: betterstack.EncodingMsgPack, MaxRequestBytes: 1 << 20})
+	mp, err := c.NewExporter(betterstack.IngestExporterOptions{Encoding: betterstack.EncodingMsgPack, MaxRequestBytes: 1 << 20})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -273,12 +276,17 @@ func TestQueryAndSearch(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// query(sql, params): placeholders are bound (escaped) client side.
+	// query(sql, params): placeholders are bound server side (param_<name>, escaped TSV text).
 	rows, err := q.Query(t.Context(),
 		"SELECT count() AS c FROM remote({table:Identifier}) WHERE position(raw, {needle:String}) > 0 AND dt >= {since:DateTime64(6)}",
 		map[string]any{"table": c.Config().SourceTable + "_logs", "needle": run + " it's \\", "since": base})
 	if err != nil || len(rows) != 1 || rows[0]["c"] != "5" {
 		t.Fatalf("query %v %v", rows, err)
+	}
+	value := `C:\tmp\it's "` + run + `"`
+	rows, err = q.Query(t.Context(), "SELECT {v:String} AS v", map[string]any{"v": value})
+	if err != nil || len(rows) != 1 || rows[0]["v"] != value {
+		t.Fatalf("query backslash+quote %v %v", rows, err)
 	}
 	rows, err = q.Query(t.Context(), "SELECT JSONExtractString(raw, 'message') AS m FROM remote("+c.Config().SourceTable+"_logs) WHERE position(raw, '"+run+"') > 0 ORDER BY dt ASC LIMIT 1 FORMAT JSON", nil)
 	if err != nil || len(rows) != 1 || rows[0]["m"] != run+" it's \\ #a" {

@@ -70,7 +70,8 @@ async fn query_binds_params_server_side() {
         header(r, "content-type").as_deref(),
         Some("text/plain; charset=utf-8")
     );
-    assert_eq!(param(r, "param_needle").as_deref(), Some("it's \\ \"x\""));
+    // String values use ClickHouse's escaped (TSV) text format: backslash doubled.
+    assert_eq!(param(r, "param_needle").as_deref(), Some("it's \\\\ \"x\""));
     assert_eq!(param(r, "param_n").as_deref(), Some("3"));
     assert_eq!(param(r, "param_u").as_deref(), Some("7"));
     assert_eq!(param(r, "param_f").as_deref(), Some("1.5"));
@@ -111,6 +112,23 @@ async fn query_binds_params_server_side() {
         assert_eq!(err.code(), ErrorCode::Validation, "{sql}");
     }
     assert!(format!("{q:?}").contains("t1_app"));
+}
+
+#[test]
+fn escape_param_value_uses_the_tsv_escaped_format() {
+    assert_eq!(
+        sdk::escape_param_value("plain 'quoted' \"text\""),
+        "plain 'quoted' \"text\""
+    );
+    assert_eq!(
+        sdk::escape_param_value("a\\b\tc\nd\re"),
+        "a\\\\b\\tc\\nd\\re"
+    );
+    assert_eq!(sdk::escape_param_value("\\N"), "\\\\N");
+    assert_eq!(
+        QueryParam::from("C:\\tmp\n").to_param_text().unwrap(),
+        "C:\\\\tmp\\n"
+    );
 }
 
 #[test]

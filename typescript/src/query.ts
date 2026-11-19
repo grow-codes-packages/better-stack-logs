@@ -121,11 +121,31 @@ export function parseDateTime(value: unknown): Date | undefined {
   return Number.isFinite(d.getTime()) ? d : undefined;
 }
 
+/**
+ * Escapes a `param_<name>` value for ClickHouse, which parses query parameters in the escaped
+ * (TabSeparated) text format: backslash → `\\`, tab → `\t`, newline → `\n`, CR → `\r`
+ * (DECISIONS 12). Without it the server would unescape a bound backslash.
+ */
+export function escapeParamValue(value: string): string {
+  return value.replace(/[\\\t\n\r]/g, (ch) => {
+    switch (ch) {
+      case "\t":
+        return "\\t";
+      case "\n":
+        return "\\n";
+      case "\r":
+        return "\\r";
+      default:
+        return "\\\\";
+    }
+  });
+}
+
 function paramText(name: string, value: QueryParamValue): string {
   if (value === null) return "\\N";
   if (value instanceof Date) return formatDateTime64(value);
   if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "string") return value;
+  if (typeof value === "string") return escapeParamValue(value);
   if (typeof value === "number" && !Number.isFinite(value)) {
     throw new ValidationError(`query: parameter ${name} must be a finite number`);
   }
@@ -401,7 +421,10 @@ export class BetterStackQuery extends BaseLogQueryClient {
     return parseRows(text);
   }
 
-  /** Renders the {@link searchLogs} SQL (values escaped client side, DECISIONS 6). */
+  /**
+   * Renders the {@link searchLogs} SQL: one runnable statement with escaped SQL literals
+   * (DECISIONS 13); only {@link query} binds parameters server side.
+   */
   renderSearchSql(options: SearchLogsOptions = {}): string {
     const source = options.source ?? this.#config.sourceTable;
     if (source === undefined) {
@@ -426,11 +449,11 @@ export class BetterStackQuery extends BaseLogQueryClient {
       throw new ValidationError("logs.search: start must not be after end");
     }
     const offset = options.cursor === undefined ? 0 : decodeCursor(options.cursor).o;
-    const from = `toDateTime64(${sqlString(formatDateTime64(start))}, 6)`;
+    const from = `toDateTime64(${sqlString(formatDateTime64(start))}, 6, 'UTC')`;
     const where = [
       end === undefined
         ? `dt >= ${from}`
-        : `dt BETWEEN ${from} AND toDateTime64(${sqlString(formatDateTime64(end))}, 6)`,
+        : `dt BETWEEN ${from} AND toDateTime64(${sqlString(formatDateTime64(end))}, 6, 'UTC')`,
     ];
     if (options.contains !== undefined && options.contains !== "") {
       where.push(`position(raw, ${sqlString(jsonEscape(options.contains))}) > 0`);

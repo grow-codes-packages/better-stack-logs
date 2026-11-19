@@ -311,16 +311,13 @@ impl BetterStackClient {
     /// The HTTP ingest exporter with the configured encoding and default limits. `CONFIG`
     /// without ingest credentials. Most users call [`log_client`](Self::log_client) instead.
     pub fn exporter(&self) -> Result<BetterStackLogExporter> {
-        self.new_ingest_exporter(IngestExporterOptions::default())
+        self.new_exporter(IngestExporterOptions::default())
     }
 
     /// An HTTP ingest exporter with its own encoding and limits (use it with
     /// [`log_client_with`](Self::log_client_with)). `CONFIG` without ingest credentials,
     /// `VALIDATION` for limits outside 1..=10 MiB.
-    pub fn new_ingest_exporter(
-        &self,
-        opts: IngestExporterOptions,
-    ) -> Result<BetterStackLogExporter> {
+    pub fn new_exporter(&self, opts: IngestExporterOptions) -> Result<BetterStackLogExporter> {
         self.inner.ingest_transport("logs.exporter")?;
         BetterStackLogExporter::new(Arc::clone(&self.inner), opts)
     }
@@ -341,12 +338,10 @@ impl BetterStackClient {
 
     /// A batching [`BetterStackLogClient`] over the HTTP ingest API (default) or OTLP;
     /// [`close`](Self::close) flushes and closes it. Must be called inside a tokio runtime.
-    /// `CONFIG` without ingest credentials or after `close`.
+    /// `CONFIG` without ingest credentials, `CANCELLED` after `close`.
     pub fn log_client(&self, opts: LogClientOptions) -> Result<BetterStackLogClient> {
         let exporter: Arc<dyn LogExporter> = match opts.protocol {
-            LogProtocol::Http => {
-                Arc::new(self.new_ingest_exporter(opts.exporter.unwrap_or_default())?)
-            }
+            LogProtocol::Http => Arc::new(self.new_exporter(opts.exporter.unwrap_or_default())?),
             LogProtocol::Otlp => {
                 Arc::new(self.new_otlp_exporter(opts.otlp.clone().unwrap_or_default())?)
             }
@@ -362,7 +357,7 @@ impl BetterStackClient {
         opts: LogClientOptions,
     ) -> Result<BetterStackLogClient> {
         if self.inner.on_close.is_closed() {
-            return Err(Error::config("logClient: client is closed"));
+            return Err(Error::cancelled("logClient: client is closed"));
         }
         let mut batch = opts.batch;
         batch.max_batch_bytes = batch.max_batch_bytes.min(MAX_REQUEST_BYTES);

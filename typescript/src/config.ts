@@ -23,8 +23,16 @@ import {
   secretValues,
   validateCommonConfig,
 } from "./core/index.js";
+import type { IngestEncoding } from "./encoding.js";
 
 const INSPECT = Symbol.for("nodejs.util.inspect.custom");
+
+/** Ingest body encodings, in documentation order (`json` is the default). */
+export const INGEST_ENCODINGS: readonly IngestEncoding[] = Object.freeze([
+  "json",
+  "ndjson",
+  "msgpack",
+]);
 
 /** Collection (table) names are identifiers: they cannot be bound as SQL parameters. */
 export const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
@@ -56,6 +64,11 @@ export interface BetterStackConfigOptions extends CommonConfigOptions {
    * `GROW_BETTER_STACK_LOGS_SOURCE_TABLE`, `BETTERSTACK_SOURCE_TABLE`.
    */
   sourceTable?: string;
+  /**
+   * Default ingest body encoding of the exporters: `"json"` (default), `"ndjson"` or `"msgpack"`;
+   * each exporter can override it. Env `GROW_BETTER_STACK_LOGS_ENCODING`.
+   */
+  encoding?: IngestEncoding;
 }
 
 /** Vendor environment variables read after `GROW_BETTER_STACK_LOGS_*`, in order (API.md §2). */
@@ -122,6 +135,8 @@ export class BetterStackConfig {
   readonly queryPassword?: Secret;
   /** Default collection for queries. */
   readonly sourceTable?: string;
+  /** Default ingest body encoding (`"json"` unless configured). */
+  readonly encoding: IngestEncoding;
 
   /** Applies defaults, validates (throws {@link ConfigError}) and freezes. */
   constructor(options: BetterStackConfigOptions = {}) {
@@ -148,6 +163,10 @@ export class BetterStackConfig {
     if (password !== undefined) this.queryPassword = password;
     if (options.sourceTable !== undefined && options.sourceTable !== "")
       this.sourceTable = options.sourceTable;
+    const encoding = (options.encoding as string | undefined)?.trim().toLowerCase();
+    this.encoding = (
+      encoding === undefined || encoding === "" ? "json" : encoding
+    ) as IngestEncoding;
     this.validate();
     Object.freeze(this);
   }
@@ -178,6 +197,8 @@ export class BetterStackConfig {
     if (queryPassword !== undefined) fromEnv.queryPassword = queryPassword;
     const sourceTable = reader.string("SOURCE_TABLE", VENDOR_ENV.sourceTable);
     if (sourceTable !== undefined) fromEnv.sourceTable = sourceTable;
+    const encoding = reader.string("ENCODING");
+    if (encoding !== undefined) fromEnv.encoding = encoding as IngestEncoding;
     const merged = mergeOptions<BetterStackConfigOptions>(fromEnv, overrides);
     return new BetterStackConfig(merged);
   }
@@ -254,6 +275,8 @@ export class BetterStackConfig {
     if (this.queryPassword?.reveal() === "") problems.push("queryPassword must not be blank");
     if (this.sourceTable !== undefined && !IDENTIFIER_PATTERN.test(this.sourceTable))
       problems.push("sourceTable must match ^[A-Za-z_][A-Za-z0-9_]*$");
+    if (!INGEST_ENCODINGS.includes(this.encoding))
+      problems.push("encoding must be json, ndjson or msgpack");
     if (problems.length > 0) throw new ConfigError(`invalid configuration: ${problems.join("; ")}`);
     // Timeouts, retry, TLS and proxy are shared by both sides.
     validateCommonConfig({
@@ -305,6 +328,7 @@ export class BetterStackConfig {
       queryUsername: this.queryUsername ?? null,
       queryPassword: this.queryPassword === undefined ? null : REDACTED,
       sourceTable: this.sourceTable ?? null,
+      encoding: this.encoding,
     };
   }
 

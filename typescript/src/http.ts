@@ -5,6 +5,7 @@
 import {
   AuthenticationError,
   BetterStackError,
+  CancelledError,
   ErrorCode,
   type ErrorDetails,
   NotFoundError,
@@ -96,12 +97,21 @@ export function mapQueryError(err: unknown): unknown {
   return mapped ?? err;
 }
 
-/** Sends a request through the transport and applies `map` to failures. */
+/** `CancelledError` for a call on a closed client (the same code in all five languages). */
+export function closedError(operation: string): CancelledError {
+  return new CancelledError(`${operation}: client is closed`);
+}
+
+/**
+ * Sends a request through the transport and applies `map` to failures. A closed transport raises
+ * `CancelledError` (the generated transport would raise `ConfigError`).
+ */
 export async function mappedRequest<T>(
   transport: HttpTransport,
   options: RequestOptions,
   map: (err: unknown) => unknown,
 ): Promise<TransportResponse<T>> {
+  if (transport.closed) throw closedError(options.operation ?? "request");
   try {
     return await transport.request<T>(options);
   } catch (err) {

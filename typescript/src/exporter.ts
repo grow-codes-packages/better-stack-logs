@@ -26,7 +26,7 @@ export const MAX_RECORD_BYTES = 10 * 1024 * 1024;
 
 /** Options of {@link BetterStackLogExporter}. */
 export interface BetterStackLogExporterOptions {
-  /** Body encoding (default `"json"`). */
+  /** Body encoding (default: the config's `encoding`, `"json"` unless configured). */
   encoding?: IngestEncoding;
   /** Uncompressed bytes per request, at most 10 MiB (default 10 MiB). */
   maxRequestBytes?: number;
@@ -97,7 +97,7 @@ export class BetterStackLogExporter implements LogExporter {
   ) {
     this.#transport = transport;
     this.#config = config;
-    const encoding = options.encoding ?? "json";
+    const encoding = options.encoding ?? config.encoding;
     if (!(encoding in CONTENT_TYPES)) {
       throw new ValidationError(
         `logs.exporter: encoding must be json, ndjson or msgpack, got ${JSON.stringify(encoding)}`,

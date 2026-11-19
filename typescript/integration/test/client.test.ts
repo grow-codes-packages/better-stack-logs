@@ -158,7 +158,8 @@ describe("client surface", () => {
     const c = client();
     await c.close();
     await c.close();
-    assert.throws(() => c.logClient(), expectCode("CONFIG"));
+    assert.throws(() => c.logClient(), expectCode("CANCELLED"));
+    await assert.rejects(c.ping(), expectCode("CANCELLED"));
   });
 });
 
@@ -169,12 +170,14 @@ describe("ingest exporter → SQL read-back", () => {
         const c = client();
         const marker = `bs-${run}-${encoding}-${gzip}`;
         const dt = new Date("2026-01-02T03:04:05.678Z");
-        await c.exporter.sendEvents(
+        const exporter = c.newExporter({ encoding });
+        assert.equal(exporter.encoding, encoding);
+        await exporter.sendEvents(
           [
             { message: `${marker} a`, dt, n: 7, nested: { ok: true, text: "Grüße ✓" } },
             { message: `${marker} b`, dt: Date.now() },
           ],
-          { encoding, gzip },
+          { gzip },
         );
         const rows = await c
           .query()
@@ -229,9 +232,7 @@ describe("ingest exporter → SQL read-back", () => {
       const c = client();
       const marker = `bs-${run}-otlp-${protocol}`;
       const exporter =
-        protocol === "protobuf"
-          ? c.otlpExporter
-          : c.logClient({ protocol: "otlp", otlp: { protocol: "json" } }).exporter;
+        protocol === "protobuf" ? c.otlpExporter : c.newOtlpExporter({ protocol: "json" });
       const result = await exporter.export(
         [
           rec(`${marker} x`, {
@@ -333,6 +334,13 @@ describe("SQL query API", () => {
       { settings: { output_format_pretty_row_numbers: 0 } },
     );
     assert.match(raw.trim(), /^\{"one":"?1"?\}$/);
+  });
+
+  test("query binds a String with a backslash and a quote (escaped TSV parameter format)", async () => {
+    const c = client();
+    const value = `C:\\tmp\\it's "${run}"`;
+    const rows = await c.query().query("SELECT {v:String} AS v", { v: value });
+    assert.deepEqual(rows, [{ v: value }]);
   });
 
   test("errors map by ClickHouse code", async () => {

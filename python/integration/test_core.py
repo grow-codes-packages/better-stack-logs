@@ -87,8 +87,10 @@ def test_close_is_idempotent_and_blocks_log_clients(env: dict[str, str]) -> None
     c = core_client(env)
     c.close()
     c.close()
-    with pytest.raises(sdk.ConfigError):
+    with pytest.raises(sdk.CancelledError):
         c.log_client()
+    with pytest.raises(sdk.CancelledError):
+        c.ping()
 
 
 def test_async_client_surface(env: dict[str, str]) -> None:

@@ -3,7 +3,10 @@ package betterstack
 import (
 	"context"
 	"errors"
+	"math"
 	"net/http"
+	"net/url"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -65,22 +68,31 @@ func TestQueryRows(t *testing.T) {
 	}
 
 	t.Run("numbers and params", func(t *testing.T) {
-		srv := newSQLServer(t, func(w http.ResponseWriter, _ *http.Request, _ string, _ int) {
+		var got url.Values
+		srv := newSQLServer(t, func(w http.ResponseWriter, r *http.Request, _ string, _ int) {
+			got = r.URL.Query()
 			_, _ = w.Write([]byte("{\"i\":7,\"f\":1.5,\"a\":[1,{\"x\":2}]}\n\n"))
 		})
 		c := newQueryClient(t, srv.URL, nil)
-		rows, err := c.Query().Query(t.Context(), "SELECT * FROM remote({t:Identifier}) WHERE raw = {needle:String} AND n > {n:Int64}", map[string]any{
-			"t": "t1_grow_sdk_logs", "needle": "it's", "n": 3,
-		})
+		sql := "SELECT * FROM remote({t:Identifier}) WHERE raw = {needle:String} AND n > {n:Int64} AND x = {none:Nullable(String)}"
+		rows, err := c.Query().Query(t.Context(), sql, map[string]any{
+			"t": "t1_grow_sdk_logs", "needle": "it's C:\\tmp\n", "n": 3, "none": nil,
+		}, QueryOptions{Settings: map[string]any{"max_execution_time": 30}})
 		if err != nil {
 			t.Fatal(err)
 		}
 		if rows[0]["i"] != int64(7) || rows[0]["f"] != 1.5 || rows[0]["a"].([]any)[1].(map[string]any)["x"] != int64(2) {
 			t.Fatalf("rows %v", rows)
 		}
-		want := `SELECT * FROM remote(t1_grow_sdk_logs) WHERE raw = 'it\'s' AND n > 3 FORMAT JSONEachRow`
-		if srv.sql(0) != want {
+		if srv.sql(0) != sql+" FORMAT JSONEachRow" {
 			t.Fatalf("sql %q", srv.sql(0))
+		}
+		want := url.Values{
+			"param_t": {"t1_grow_sdk_logs"}, "param_needle": {`it's C:\\tmp\n`}, "param_n": {"3"},
+			"param_none": {`\N`}, "max_execution_time": {"30"},
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("query %v", got)
 		}
 	})
 
@@ -92,8 +104,10 @@ func TestQueryRows(t *testing.T) {
 				t.Errorf("%q: %v", sql, err)
 			}
 		}
-		if _, err := q.Query(t.Context(), "SELECT {x:String}", nil); !errors.Is(err, ErrValidation) {
-			t.Fatalf("missing param: %v", err)
+		for name, v := range map[string]any{"bad-name": 1, "f": math.NaN(), "m": map[string]any{}} {
+			if _, err := q.Query(t.Context(), "SELECT 1", map[string]any{name: v}); !errors.Is(err, ErrValidation) {
+				t.Errorf("param %s: %v", name, err)
+			}
 		}
 		if srv.calls.Load() != 0 {
 			t.Fatal("nothing must be sent")

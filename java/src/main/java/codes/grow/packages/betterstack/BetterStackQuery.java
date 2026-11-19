@@ -197,7 +197,34 @@ public final class BetterStackQuery implements LogQueryClient {
         || (value instanceof Float && !Float.isFinite((Float) value))) {
       throw new ValidationException(operation + ": parameter " + name + " must be a finite number");
     }
-    return value.toString();
+    if (value instanceof Number || value instanceof Boolean) {
+      return value.toString();
+    }
+    return escapeParamValue(value.toString());
+  }
+
+  /**
+   * Escapes a {@code param_<name>} value for ClickHouse, which parses query parameter values in the
+   * escaped (TabSeparated) text format: backslash becomes {@code \\}, tab {@code \t}, newline
+   * {@code \n} and carriage return {@code \r} (DECISIONS 12). Applied to every non-numeric
+   * parameter value by {@link #query(String, Map)}.
+   *
+   * @param value parameter text
+   * @return the escaped text
+   */
+  public static String escapeParamValue(String value) {
+    StringBuilder out = new StringBuilder(value.length() + 8);
+    for (int i = 0; i < value.length(); i++) {
+      char c = value.charAt(i);
+      switch (c) {
+        case '\\' -> out.append("\\\\");
+        case '\t' -> out.append("\\t");
+        case '\n' -> out.append("\\n");
+        case '\r' -> out.append("\\r");
+        default -> out.append(c);
+      }
+    }
+    return out.toString();
   }
 
   /**

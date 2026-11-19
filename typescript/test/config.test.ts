@@ -193,6 +193,27 @@ describe("BetterStackConfig", () => {
     }
   });
 
+  it("encoding: json by default, GROW_BETTER_STACK_LOGS_ENCODING, normalized, validated", () => {
+    expect(new BetterStackConfig(INGEST).encoding).toBe("json");
+    expect(new BetterStackConfig({ ...INGEST, encoding: " NDJSON " as never }).encoding).toBe(
+      "ndjson",
+    );
+    expect(new BetterStackConfig({ ...INGEST, encoding: "" as never }).encoding).toBe("json");
+    const env = { GROW_BETTER_STACK_LOGS_ENCODING: "msgpack", BETTERSTACK_SOURCE_TOKEN: "t" };
+    const cfg = BetterStackConfig.fromEnv({ url: INGEST.url }, env);
+    expect(cfg.encoding).toBe("msgpack");
+    expect(cfg.toJSON().encoding).toBe("msgpack");
+    expect(BetterStackConfig.fromEnv({ url: INGEST.url, encoding: "json" }, env).encoding).toBe(
+      "json",
+    );
+    expect(() => new BetterStackConfig({ ...INGEST, encoding: "xml" as never })).toThrow(
+      /encoding must be json, ndjson or msgpack/,
+    );
+    expect(() =>
+      BetterStackConfig.fromEnv({}, { ...env, GROW_BETTER_STACK_LOGS_ENCODING: "csv" }),
+    ).toThrow(ConfigError);
+  });
+
   it("documents the vendor variables in order", () => {
     expect(VENDOR_ENV.url).toEqual(["BETTERSTACK_INGESTING_URL", "BETTERSTACK_INGESTING_HOST"]);
     expect(VENDOR_ENV.queryUrl).toEqual(["BETTERSTACK_QUERY_URL", "BETTERSTACK_QUERY_HOST"]);

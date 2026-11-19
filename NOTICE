@@ -28,8 +28,8 @@ Trademarks
 -------------------------------------------------------------------------------
 
 This project is an independent, community-maintained client library. It is not
-affiliated with, endorsed or sponsored by Better Stack, Inc..
-Better Stack Logs is a trademark of Better Stack, Inc.. All other product names, logos and
+affiliated with, endorsed or sponsored by Better Stack, Inc.
+Better Stack Logs is a trademark of Better Stack, Inc. All other product names, logos and
 brands are the property of their respective owners and are used for
 identification purposes only.
 
@@ -59,3 +59,50 @@ copyright and licence.
 
   CODE_OF_CONDUCT.md is adapted from the Contributor Covenant, version 2.1,
   https://www.contributor-covenant.org, licensed under CC BY 4.0.
+
+  OTLP log messages (all five packages). The OpenTelemetry logs exporter
+  writes ExportLogsServiceRequest / ResourceLogs / ScopeLogs / LogRecord /
+  AnyValue / KeyValue messages and reads ExportLogsServiceResponse
+  (partial_success) using the field numbers and types of the OpenTelemetry
+  protocol definitions (opentelemetry/proto/collector/logs/v1/logs_service.proto,
+  logs/v1/logs.proto, common/v1/common.proto, resource/v1/resource.proto):
+    https://github.com/open-telemetry/opentelemetry-proto
+    Copyright The OpenTelemetry Authors, licensed under the Apache License,
+    Version 2.0.
+  TypeScript, Rust and Java hand-encode these messages from the field numbers;
+  no code was copied. Go uses the generated module go.opentelemetry.io/proto/otlp
+  and Python the opentelemetry-proto package (both Apache-2.0, The OpenTelemetry
+  Authors) as runtime dependencies.
+
+  ClickHouse SQL and HTTP interface (all five packages). The SQL query client
+  speaks the ClickHouse HTTP interface that Better Stack exposes for SQL
+  queries: {name:Type} query parameters with param_<name> values in the escaped
+  (TabSeparated) text format, the JSONEachRow / JSON output formats, the
+  X-ClickHouse-Exception-Code header, and the names and numbers of ClickHouse
+  exception codes (for example AUTHENTICATION_FAILED = 516, UNKNOWN_TABLE = 60,
+  SYNTAX_ERROR = 62) used for error mapping, as documented by ClickHouse:
+    https://clickhouse.com/docs/interfaces/http
+    https://github.com/ClickHouse/ClickHouse/blob/master/src/Common/ErrorCodes.cpp
+    Copyright ClickHouse, Inc., licensed under the Apache License, Version 2.0.
+  Only the wire protocol and the code names/numbers are used; no ClickHouse code
+  was copied and no ClickHouse library is a dependency.
+
+  MessagePack (all five packages). The MessagePack encoder (including the
+  timestamp extension type -1 used for "dt") is implemented from the
+  MessagePack specification (https://github.com/msgpack/msgpack/blob/master/spec.md,
+  Copyright Sadayuki Furuhashi, published under a permissive licence); no
+  MessagePack library is a runtime dependency.
+
+  Test-only Better Stack stub (docker/betterstack-stub/). The contract stub used
+  by the Docker integration suite is Grow Codes' own code (vendored from
+  sdk-kit, Apache-2.0). It is a test fixture only: it is not part of any
+  published package and contains no Better Stack code. Its recorded behaviour
+  follows Better Stack's public documentation (see its README.md).
+
+  Notable runtime dependencies of the service code: undici (MIT) and
+  @opentelemetry/api (Apache-2.0) for TypeScript; reqwest (MIT OR Apache-2.0),
+  flate2 (MIT OR Apache-2.0) and opentelemetry (Apache-2.0) for Rust;
+  go.opentelemetry.io/proto/otlp and google.golang.org/protobuf (BSD-3-Clause)
+  for Go; httpx (BSD-3-Clause) and the OpenTelemetry Python packages
+  (Apache-2.0) for Python; Jackson (Apache-2.0) and opentelemetry-api
+  (Apache-2.0) for Java.

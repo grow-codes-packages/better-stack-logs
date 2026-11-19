@@ -75,9 +75,9 @@ pub use crate::otlp::{
     OtlpExporterOptions, OtlpPartialSuccess, OtlpProtocol, DEFAULT_SCOPE_NAME, OTLP_LOGS_PATH,
 };
 pub use crate::query::{
-    format_datetime64, json_escape, log_record_from_row, parse_datetime, parse_rows, sql_string,
-    BetterStackQuery, QueryOptions, QueryParam, QueryParams, QueryRow, SearchLogsOptions,
-    DEFAULT_SEARCH_LIMIT, MAX_SEARCH_LIMIT,
+    escape_param_value, format_datetime64, json_escape, log_record_from_row, parse_datetime,
+    parse_rows, sql_string, BetterStackQuery, QueryOptions, QueryParam, QueryParams, QueryRow,
+    SearchLogsOptions, DEFAULT_SEARCH_LIMIT, MAX_SEARCH_LIMIT,
 };
 
 /// Service-prefixed alias of [`Error`].

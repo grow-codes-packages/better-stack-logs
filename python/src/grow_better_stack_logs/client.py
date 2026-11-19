@@ -363,7 +363,7 @@ class BetterStackClient:
         """
         with self._lock:
             if self._closed:
-                raise ConfigError("log_client: client is closed")
+                raise CancelledError("log_client: client is closed")
         _check_protocol(protocol)
         if exporter is None:
             exporter = self.otlp_exporter if protocol == "otlp" else self.exporter
@@ -390,7 +390,11 @@ class BetterStackClient:
         self._resources.register(tail)
 
     def close(self) -> None:
-        """Flush and close every log client, stop tails and close connections (idempotent)."""
+        """Flush and close every log client, stop tails and close connections (idempotent).
+
+        Later calls on the client (and on its exporters and query client) raise
+        :class:`CancelledError`.
+        """
         with self._lock:
             if self._closed:
                 return
@@ -580,7 +584,7 @@ class AsyncBetterStackClient:
     ) -> AsyncBetterStackLogClient:
         """See :meth:`BetterStackClient.log_client`; call it inside a running event loop."""
         if self._closed:
-            raise ConfigError("log_client: client is closed")
+            raise CancelledError("log_client: client is closed")
         _check_protocol(protocol)
         if exporter is None:
             exporter = self.otlp_exporter if protocol == "otlp" else self.exporter

@@ -204,6 +204,7 @@ class BetterStackIntegrationTest {
     c.close();
     assertTrue(c.isClosed());
     assertThrows(CancelledException.class, c::ping);
+    assertThrows(CancelledException.class, c::logClient);
   }
 
   @Test
@@ -364,8 +365,7 @@ class BetterStackIntegrationTest {
     }
     lc.flush();
 
-    // query(sql, params): placeholders bound server side (param_<name>); the value is kept
-    // free of backslashes (ClickHouse parses String parameters in its escaped text format)
+    // query(sql, params): placeholders bound server side (param_<name>, escaped TSV text)
     List<Map<String, Object>> rows =
         q.query(
             "SELECT count() AS c FROM remote("
@@ -373,6 +373,10 @@ class BetterStackIntegrationTest {
                 + "_logs) WHERE position(raw, {needle:String}) > 0 AND dt >= {since:DateTime64(6)}",
             Map.of("needle", run + " it's", "since", base));
     assertEquals(List.of(Map.of("c", "5")), rows);
+    // String parameters use ClickHouse's escaped (TSV) format: backslash and quote survive.
+    String value = "C:\\tmp\\it's \"" + run + "\"";
+    assertEquals(
+        List.of(Map.of("v", value)), q.query("SELECT {v:String} AS v", Map.of("v", value)));
     rows =
         q.queryAsync(
                 "SELECT JSONExtractString(raw, 'message') AS m FROM remote("

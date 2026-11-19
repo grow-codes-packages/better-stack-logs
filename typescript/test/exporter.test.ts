@@ -63,6 +63,18 @@ describe("BetterStackLogExporter.export", () => {
     ]);
   });
 
+  it("uses the config encoding as the default; an exporter option overrides it", async () => {
+    const { s } = await setup();
+    const cfg = new BetterStackConfig({ url: s.url, sourceToken: TOKEN, encoding: "ndjson" });
+    const transport = new HttpTransport({ config: cfg.transportConfig("ingest") });
+    const nd = new BetterStackLogExporter(transport, cfg);
+    expect(nd.encoding).toBe("ndjson");
+    await nd.export([rec("a")], { gzip: false });
+    expect(s.requests[0]?.headers["content-type"]).toBe("application/x-ndjson");
+    expect(new BetterStackLogExporter(transport, cfg, { encoding: "json" }).encoding).toBe("json");
+    await transport.close();
+  });
+
   it("sends NDJSON and MessagePack without gzip", async () => {
     const { s } = await setup();
     const t = { url: s.url, sourceToken: TOKEN };

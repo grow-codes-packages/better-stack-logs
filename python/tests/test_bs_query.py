@@ -197,6 +197,19 @@ def test_query_binds_parameters_server_side(server: MockServer) -> None:
     assert "src-token" not in json.dumps(seen.headers)
 
 
+def test_escape_param_value() -> None:
+    assert sdk.escape_param_value("plain 'quoted' \"text\"") == "plain 'quoted' \"text\""
+    assert sdk.escape_param_value("a\\b\tc\nd\re") == "a\\\\b\\tc\\nd\\re"
+    assert sdk.escape_param_value("\\N") == "\\\\N"
+
+
+def test_query_escapes_string_parameters_tsv(server: MockServer) -> None:
+    server.enqueue("/", Reply(200, ""))
+    with client(server) as c:
+        c.query().query("SELECT {v:String} AS v", {"v": 'C:\\tmp\\it\'s "x"\n'})
+    assert params_of(server.seen[0]) == {"param_v": ['C:\\\\tmp\\\\it\'s "x"\\n']}
+
+
 def test_query_validation(server: MockServer) -> None:
     with client(server) as c:
         q = c.query()

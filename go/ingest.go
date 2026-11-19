@@ -39,7 +39,7 @@ type IngestExporter struct {
 	maxRecord  int
 }
 
-// IngestExporterOptions configure NewIngestExporter. Zero values mean the defaults.
+// IngestExporterOptions configure NewExporter. Zero values mean the defaults.
 type IngestExporterOptions struct {
 	// Encoding is the body encoding (default Config.Encoding, else EncodingJSON).
 	Encoding Encoding
@@ -51,10 +51,10 @@ type IngestExporterOptions struct {
 	MaxRecordBytes int
 }
 
-// NewIngestExporter returns an IngestExporter with its own encoding and limits (use it
+// NewExporter returns an IngestExporter with its own encoding and limits (use it
 // with NewLogClientWith). It is a CONFIG error without ingest credentials and a
 // VALIDATION error for an unknown encoding or limits outside 1..10 MiB.
-func (c *Client) NewIngestExporter(opts IngestExporterOptions) (*IngestExporter, error) {
+func (c *Client) NewExporter(opts IngestExporterOptions) (*IngestExporter, error) {
 	const op = "logs.exporter"
 	if err := c.needIngest(op); err != nil {
 		return nil, err

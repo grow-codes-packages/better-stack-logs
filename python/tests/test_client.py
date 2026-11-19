@@ -185,8 +185,10 @@ def test_core_close_idempotent(server: MockServer) -> None:
     assert stopped == [1]
     c.resources.register(Res())  # registering after close stops immediately
     assert stopped == [1, 1]
-    with pytest.raises(sdk.ConfigError, match="closed"):
+    with pytest.raises(sdk.CancelledError, match="log_client: client is closed"):
         c.log_client()
+    with pytest.raises(sdk.CancelledError, match="closed"):
+        c.ping()
 
 
 def test_close_flushes_log_clients(server: MockServer) -> None:
@@ -236,7 +238,7 @@ async def test_async_client(server: MockServer, monkeypatch: pytest.MonkeyPatch)
     await c.close()
     with pytest.raises(sdk.CancelledError):
         await c.health()
-    with pytest.raises(sdk.ConfigError):
+    with pytest.raises(sdk.CancelledError):
         c.log_client()
     server.enqueue("/", Reply(405, "Method Not Allowed"))
     server.enqueue("/", Reply(202, b""))
@@ -302,6 +304,10 @@ async def test_async_close_flushes_and_stops_tails(server: MockServer) -> None:
     tail = await c.query().tail("x", lambda r: None, interval_s=0.05)
     await c.aclose()
     assert tail._task.done()
+    with pytest.raises(sdk.CancelledError, match="log_client: client is closed"):
+        c.log_client()
+    with pytest.raises(sdk.CancelledError, match="closed"):
+        await c.ping()
     bodies = [s.body for s in server.seen if s.method == "POST"]
     assert any(
         b.startswith(b"\x1f\x8b") and b"async flushed" in __import__("gzip").decompress(b)

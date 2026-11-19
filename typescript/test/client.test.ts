@@ -6,6 +6,7 @@ import {
   BetterStackLogExporter,
   BetterStackOtlpLogExporter,
   BetterStackQuery,
+  CancelledError,
   ConfigError,
   PACKAGE_KEY,
   SDK_VERSION,
@@ -212,21 +213,43 @@ describe("BetterStackClient surface", () => {
     const otlpJson = c.logClient({ protocol: "otlp", otlp: { protocol: "json" } });
     expect(otlpJson.exporter).toMatchObject({ protocol: "json" });
     expect(() => c.logClient({ protocol: "grpc" as never })).toThrow(ConfigError);
+    expect(c.newExporter({ encoding: "msgpack" })).toMatchObject({ encoding: "msgpack" });
+    expect(c.newExporter()).toBeInstanceOf(BetterStackLogExporter);
+    expect(c.newOtlpExporter({ protocol: "json" })).toMatchObject({ protocol: "json" });
     http.logger().info("flushed on close", { n: 1 });
     await c.close();
     await c.close();
     expect(i.requests).toHaveLength(1);
     expect(JSON.parse(i.requests[0]?.text ?? "[]")[0].message).toBe("flushed on close");
-    expect(() => c.logClient()).toThrow(/closed/);
+    expect(() => c.logClient()).toThrow(CancelledError);
+    expect(() => c.logClient()).toThrow(/logClient: client is closed/);
   });
 
-  it("core.close.idempotent: close twice is safe and later calls fail with CONFIG", async () => {
+  it("core.close.idempotent: close twice is safe and later calls fail with CANCELLED", async () => {
     const q = await server([replyFrom("health.query_ping")]);
     const c = new BetterStackClient(queryOpts(q));
+    const query = c.query();
     await c.health();
     await c.close();
     await c.close();
-    await expect(c.query().query("SELECT 1")).rejects.toMatchObject({ code: "CONFIG" });
+    await expect(query.query("SELECT 1")).rejects.toMatchObject({ code: "CANCELLED" });
+    await expect(c.health()).rejects.toBeInstanceOf(CancelledError);
+    await expect(c.ping()).rejects.toMatchObject({ code: "CANCELLED" });
+    expect(q.requests).toHaveLength(1);
+  });
+
+  it("calls on a closed ingest client fail with CANCELLED (exporters, logClient, ping)", async () => {
+    const i = await server([{ status: 202 }]);
+    const c = new BetterStackClient({ ...ingestOpts(i), ...fast });
+    const exporter = c.exporter;
+    await c.close();
+    await expect(c.ping()).rejects.toMatchObject({ code: "CANCELLED" });
+    await expect(exporter.sendEvents([{ message: "late" }])).rejects.toMatchObject({
+      code: "CANCELLED",
+    });
+    expect(() => c.otlpExporter).toThrow(CancelledError);
+    expect(() => c.logClient()).toThrow(CancelledError);
+    expect(i.requests).toHaveLength(0);
   });
 
   it("an unreadable TLS file raises ConfigError", () => {

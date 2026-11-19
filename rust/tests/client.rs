@@ -322,7 +322,7 @@ async fn health_ping_version_close_with_both_hosts() {
         c.log_client(LogClientOptions::default())
             .unwrap_err()
             .code(),
-        ErrorCode::Config
+        ErrorCode::Cancelled
     );
 }
 
@@ -462,7 +462,7 @@ async fn export_encodings_gzip_and_splitting() {
             let s = accept_all().await;
             let c = client(Some(&s), None);
             let exp = c
-                .new_ingest_exporter(IngestExporterOptions::default().encoding(enc))
+                .new_exporter(IngestExporterOptions::default().encoding(enc))
                 .unwrap();
             assert_eq!(exp.encoding(), enc);
             let res = exp
@@ -503,7 +503,7 @@ async fn export_encodings_gzip_and_splitting() {
     // small request limit: one request per record, oversized records rejected
     let one = sdk::encode_record(&record("1"), Encoding::Ndjson).len();
     let exp = c
-        .new_ingest_exporter(
+        .new_exporter(
             IngestExporterOptions::default()
                 .max_request_bytes(one + 10)
                 .max_record_bytes(one + 5),
@@ -532,7 +532,7 @@ async fn export_encodings_gzip_and_splitting() {
     assert!(format!("{exp:?}").contains("max_request_bytes"));
     for bad in [0, sdk::MAX_REQUEST_BYTES + 1] {
         assert_eq!(
-            c.new_ingest_exporter(IngestExporterOptions::default().max_request_bytes(bad))
+            c.new_exporter(IngestExporterOptions::default().max_request_bytes(bad))
                 .unwrap_err()
                 .code(),
             ErrorCode::Validation
@@ -556,7 +556,7 @@ async fn export_partial_failure_and_send_events() {
     let c = client(Some(&s), None);
     let one = sdk::encode_record(&record("1"), Encoding::Json).len();
     let exp = c
-        .new_ingest_exporter(IngestExporterOptions::default().max_request_bytes(one + 10))
+        .new_exporter(IngestExporterOptions::default().max_request_bytes(one + 10))
         .unwrap();
     let res = exp
         .export(
@@ -601,7 +601,7 @@ async fn export_partial_failure_and_send_events() {
         ErrorCode::Validation
     );
     let small = c
-        .new_ingest_exporter(IngestExporterOptions::default().max_request_bytes(10))
+        .new_exporter(IngestExporterOptions::default().max_request_bytes(10))
         .unwrap();
     assert_eq!(
         small
@@ -867,7 +867,7 @@ async fn query_only_client_cannot_log() {
         ErrorCode::Config
     );
     assert_eq!(
-        c.new_ingest_exporter(IngestExporterOptions::default())
+        c.new_exporter(IngestExporterOptions::default())
             .unwrap_err()
             .code(),
         ErrorCode::Config

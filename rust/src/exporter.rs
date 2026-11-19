@@ -21,7 +21,7 @@ pub const MAX_REQUEST_BYTES: usize = 10 * 1024 * 1024;
 /// Better Stack limit for one record (10 MiB uncompressed).
 pub const MAX_RECORD_BYTES: usize = 10 * 1024 * 1024;
 
-/// Options of [`BetterStackClient::new_ingest_exporter`](crate::BetterStackClient::new_ingest_exporter).
+/// Options of [`BetterStackClient::new_exporter`](crate::BetterStackClient::new_exporter).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct IngestExporterOptions {
     /// Body encoding (default: the config's encoding).

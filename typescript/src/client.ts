@@ -13,7 +13,7 @@ import {
 } from "./core/index.js";
 import { BetterStackConfig, type BetterStackConfigOptions } from "./config.js";
 import { BetterStackLogExporter, type BetterStackLogExporterOptions } from "./exporter.js";
-import { joinUrl, mapIngestError, mappedRequest } from "./http.js";
+import { closedError, joinUrl, mapIngestError, mappedRequest } from "./http.js";
 import {
   BatchingLogClient,
   type BatchingLogClientOptions,
@@ -114,7 +114,12 @@ export class BetterStackClient {
     return new BetterStackClient(BetterStackConfig.fromEnv(overrides));
   }
 
+  #ensureOpen(operation: string): void {
+    if (this.#closing !== undefined) throw closedError(operation);
+  }
+
   #ingestTransport(operation: string): HttpTransport {
+    this.#ensureOpen(operation);
     if (this.#ingest === undefined) {
       throw new ConfigError(
         `${operation}: url (the source's ingesting host) and sourceToken are required for ingestion`,
@@ -124,6 +129,7 @@ export class BetterStackClient {
   }
 
   #sqlTransport(operation: string): HttpTransport {
+    this.#ensureOpen(operation);
     if (this.#queryTransport === undefined) {
       throw new ConfigError(
         `${operation}: queryUrl, queryUsername and queryPassword are required for SQL queries`,
@@ -135,10 +141,11 @@ export class BetterStackClient {
   /**
    * Unauthenticated liveness. With a query host: `GET {queryUrl}/ping` (`Ok.`). Ingest-only:
    * `GET {url}/` without credentials (any answer below 500 proves the host is reachable; no data
-   * is sent). Never throws except `CANCELLED`/`CONFIG`.
+   * is sent). Never throws except `CANCELLED` (also on a closed client) / `CONFIG`.
    */
   health(options: CallOptions = {}): Promise<HealthStatus> {
     return probeHealth(async () => {
+      this.#ensureOpen("health");
       const signal = options.signal === undefined ? {} : { signal: options.signal };
       if (this.#queryTransport !== undefined) {
         const res = await this.#queryTransport.get<string>(
@@ -166,9 +173,10 @@ export class BetterStackClient {
    * Authenticated round trip; returns the latency in ms. With query credentials:
    * `SELECT count() AS c FROM remote(<sourceTable>_logs) WHERE 1 = 0` (or `SELECT 1` without a
    * `sourceTable`). Ingest-only: posts an empty batch `[]` (0 events). Bad credentials →
-   * `AuthenticationError`.
+   * `AuthenticationError`. A closed client raises `CancelledError`.
    */
   async ping(options: CallOptions = {}): Promise<number> {
+    this.#ensureOpen("ping");
     const start = performance.now();
     if (this.#queryTransport !== undefined) {
       const table = this.config.sourceTable;
@@ -222,25 +230,37 @@ export class BetterStackClient {
   }
 
   /**
+   * A new HTTP ingest exporter with its own encoding and limits (use it with
+   * `new BetterStackLogClient(exporter)` or for {@link BetterStackLogExporter.sendEvents}).
+   * Requires the ingest side; invalid options throw `ValidationError`.
+   */
+  newExporter(options: BetterStackLogExporterOptions = {}): BetterStackLogExporter {
+    return new BetterStackLogExporter(this.#ingestTransport("newExporter"), this.config, options);
+  }
+
+  /** A new OTLP/HTTP logs exporter with its own protocol, scope name and limit. Requires the ingest side. */
+  newOtlpExporter(options: BetterStackOtlpLogExporterOptions = {}): BetterStackOtlpLogExporter {
+    return new BetterStackOtlpLogExporter(
+      this.#ingestTransport("newOtlpExporter"),
+      this.config,
+      options,
+    );
+  }
+
+  /**
    * A batching {@link BetterStackLogClient} over the HTTP ingest API (default) or OTLP.
    * {@link close} flushes and closes every log client it created. Requires the ingest side.
    */
   logClient(options: BetterStackLogClientOptions = {}): BetterStackLogClient {
-    if (this.#closing !== undefined) throw new ConfigError("logClient: client is closed");
+    this.#ensureOpen("logClient");
     const { protocol, exporter: exporterOptions, otlp, ...batching } = options;
-    const transport = this.#ingestTransport("logClient");
+    this.#ingestTransport("logClient");
     let exporter: LogExporter;
     const wire: string = protocol ?? "http";
     if (wire === "otlp") {
-      exporter =
-        otlp === undefined
-          ? this.otlpExporter
-          : new BetterStackOtlpLogExporter(transport, this.config, otlp);
+      exporter = otlp === undefined ? this.otlpExporter : this.newOtlpExporter(otlp);
     } else if (wire === "http") {
-      exporter =
-        exporterOptions === undefined
-          ? this.exporter
-          : new BetterStackLogExporter(transport, this.config, exporterOptions);
+      exporter = exporterOptions === undefined ? this.exporter : this.newExporter(exporterOptions);
     } else {
       throw new ConfigError('logClient: protocol must be "http" or "otlp"');
     }
@@ -255,7 +275,10 @@ export class BetterStackClient {
     return this.#query;
   }
 
-  /** Flushes and closes every log client, then releases connections. Idempotent. */
+  /**
+   * Flushes and closes every log client, then releases connections. Idempotent; later calls on
+   * the client (and on its exporters and query client) raise `CancelledError`.
+   */
   close(): Promise<void> {
     this.#closing ??= (async () => {
       await Promise.allSettled([...this.#logClients].map((c) => c.close()));

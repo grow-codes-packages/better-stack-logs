@@ -240,6 +240,9 @@ def test_query_binds_parameters_format_json_and_query_raw(
         "SELECT 1 AS one FORMAT JSONEachRow", settings={"output_format_pretty_row_numbers": 0}
     )
     assert raw.strip() in ('{"one":1}', '{"one":"1"}')
+    # String parameters use ClickHouse's escaped (TSV) format: backslash and quote survive.
+    value = f'C:\\tmp\\it\'s "{run}"'
+    assert q.query("SELECT {v:String} AS v", {"v": value}) == [{"v": value}]
 
 
 def test_errors_map_by_clickhouse_code(client: sdk.BetterStackClient, env: dict[str, str]) -> None:
@@ -384,7 +387,7 @@ def test_async_exporter_query_log_client_and_tail(env: dict[str, str], run: str)
             assert seen == [f"{marker} tail 1"]
             with pytest.raises(sdk.NotFoundError):
                 await q.query("SELECT dt FROM remote(t_missing_logs)")
-        with pytest.raises(sdk.ConfigError):
+        with pytest.raises(sdk.CancelledError):
             c.log_client()
 
     asyncio.run(scenario())

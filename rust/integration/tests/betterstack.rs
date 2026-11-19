@@ -106,6 +106,12 @@ async fn core_surface() {
     c.close().await;
     assert!(c.is_closed());
     assert_eq!(c.ping().await.unwrap_err().code(), ErrorCode::Cancelled);
+    assert_eq!(
+        c.log_client(LogClientOptions::default())
+            .unwrap_err()
+            .code(),
+        ErrorCode::Cancelled
+    );
 }
 
 #[tokio::test]
@@ -241,7 +247,7 @@ async fn exporters_and_otlp() {
     assert_eq!(raw[0].attributes["custom"]["k"], "v");
 
     let mp = c
-        .new_ingest_exporter(
+        .new_exporter(
             IngestExporterOptions::default()
                 .encoding(Encoding::Msgpack)
                 .max_request_bytes(1 << 20),
@@ -333,6 +339,18 @@ async fn query_and_search() {
         .unwrap();
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0]["c"], "5", "{rows:?}");
+    // String parameters use ClickHouse's escaped (TSV) format: backslash and quote survive.
+    let value = format!("C:\\tmp\\it's \"{run}\"");
+    let rows = q
+        .query(
+            "SELECT {v:String} AS v",
+            &query_params! { "v" => value.clone() },
+            &QueryOptions::default(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0]["v"], value.as_str(), "{rows:?}");
     let rows = q
         .query(
             &format!("SELECT JSONExtractString(raw, 'message') AS m FROM remote({table}_logs) WHERE position(raw, '{run}') > 0 ORDER BY dt ASC LIMIT 1 FORMAT JSON"),

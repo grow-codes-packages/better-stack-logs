@@ -83,7 +83,8 @@ impl<T: Into<QueryParam>> From<Option<T>> for QueryParam {
 }
 
 impl QueryParam {
-    /// The text sent as `param_<name>` (ClickHouse's escaped text form).
+    /// The text sent as `param_<name>` (ClickHouse's escaped text form; strings go through
+    /// [`escape_param_value`]).
     pub fn to_param_text(&self) -> Result<String> {
         Ok(match self {
             QueryParam::Null => "\\N".to_owned(),
@@ -94,7 +95,7 @@ impl QueryParam {
             QueryParam::Float(_) => {
                 return Err(Error::validation("query: a float parameter must be finite"))
             }
-            QueryParam::String(s) => s.clone(),
+            QueryParam::String(s) => escape_param_value(s),
             QueryParam::Time(t) => format_datetime64(*t),
         })
     }
@@ -206,6 +207,24 @@ impl SearchLogsOptions {
         self.cursor = Some(cursor.into());
         self
     }
+}
+
+/// Escapes a `param_<name>` value for ClickHouse, which parses query parameter values in the
+/// escaped (TabSeparated) text format: backslash → `\\`, tab → `\t`, newline → `\n`,
+/// carriage return → `\r` (DECISIONS 12). Without it the server would unescape a bound
+/// backslash.
+pub fn escape_param_value(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for c in value.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '\t' => out.push_str("\\t"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            c => out.push(c),
+        }
+    }
+    out
 }
 
 /// Escapes a value as a ClickHouse single-quoted string literal (`\`, `'` and control

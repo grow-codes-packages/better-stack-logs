@@ -113,6 +113,17 @@ class QueryTest {
   }
 
   @Test
+  void escapeParamValueUsesTheTsvEscapedFormat() {
+    assertThat(BetterStackQuery.escapeParamValue("plain 'quoted' \"text\""))
+        .isEqualTo("plain 'quoted' \"text\"");
+    assertThat(BetterStackQuery.escapeParamValue("a\\b\tc\nd\re")).isEqualTo("a\\\\b\\tc\\nd\\re");
+    assertThat(BetterStackQuery.escapeParamValue("\\N")).isEqualTo("\\\\N");
+    server.fallback((ex, r) -> FakeServer.send(ex, 200, "", ND));
+    q.query("SELECT {v:String} AS v", Map.of("v", new StringBuilder("C:\\tmp\n")));
+    assertThat(server.last().params()).containsEntry("param_v", "C:\\\\tmp\\n");
+  }
+
+  @Test
   void queryParamsAndSettings() {
     server.fallback((ex, r) -> FakeServer.send(ex, 200, "{\"c\":\"1\"}\n", ND));
     Map<String, Object> params = new HashMap<>();
@@ -128,7 +139,7 @@ class QueryTest {
         QueryOptions.defaults().withSetting("max_execution_time", 30));
     Map<String, String> sent = server.last().params();
     assertThat(sent)
-        .containsEntry("param_needle", "it's \\ x")
+        .containsEntry("param_needle", "it's \\\\ x")
         .containsEntry("param_since", "2026-01-02 03:04:05.123456")
         .containsEntry("param_none", "\\N")
         .containsEntry("param_flag", "true")

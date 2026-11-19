@@ -55,7 +55,10 @@ var formatClauseRe = regexp.MustCompile(`(?is)\bFORMAT\s+([A-Za-z][A-Za-z0-9_]*)
 // jsonFormats are the FORMAT names Query parses into rows.
 var jsonFormats = map[string]bool{"jsoneachrow": true, "json": true, "jsonstringseachrow": true, "ndjson": true, "jsonlines": true}
 
-// Query runs sql with params bound client side (see BindParams) and returns the rows.
+// Query runs sql with params bound server side (ClickHouse {name:Type} placeholders +
+// param_<name> URL parameters, DECISIONS 10; values rendered by paramText, strings
+// escaped with EscapeParamValue) and returns the rows. A placeholder without a value is
+// rejected by the server (VALIDATION).
 // Without a FORMAT clause "FORMAT JSONEachRow" is appended; FORMAT JSONEachRow / JSON
 // (also with output_format_json_array_of_rows) are parsed, other formats are a
 // VALIDATION error (use QueryRaw). ClickHouse errors are mapped by their exception code
@@ -82,7 +85,7 @@ func (q *Query) rows(ctx context.Context, op, sql string, params map[string]any,
 	return parseRows(op, res)
 }
 
-// QueryRaw runs sql with params bound client side and returns the response body
+// QueryRaw runs sql with params bound server side and returns the response body
 // unchanged (any FORMAT). Errors are mapped like Query's.
 func (q *Query) QueryRaw(ctx context.Context, sql string, params map[string]any, opts ...QueryOptions) (string, error) {
 	res, err := q.raw(ctx, "query", sql, params, opts...)
@@ -99,11 +102,20 @@ func (q *Query) raw(ctx context.Context, op, sql string, params map[string]any, 
 	if strings.TrimSpace(sql) == "" {
 		return nil, ValidationError(op, "sql must not be empty")
 	}
-	bound, err := BindParams(sql, params)
-	if err != nil {
-		return nil, err
-	}
 	var query url.Values
+	for name, v := range params {
+		if !IsValidIdentifier(name) {
+			return nil, ValidationError(op, "invalid parameter name "+strconv.Quote(name))
+		}
+		text, err := paramText(v)
+		if err != nil {
+			return nil, ValidationError(op, "parameter "+strconv.Quote(name)+": "+err.Error())
+		}
+		if query == nil {
+			query = url.Values{}
+		}
+		query.Set("param_"+name, text)
+	}
 	for _, o := range opts {
 		for k, v := range o.Settings {
 			if !IsValidIdentifier(k) {
@@ -118,7 +130,7 @@ func (q *Query) raw(ctx context.Context, op, sql string, params map[string]any, 
 	cctx, capt := withCapture(ctx)
 	res, err := q.client.query.do(cctx, &request{
 		Method: http.MethodPost, Path: "/", Query: query, Header: q.client.queryHeader(),
-		Body: []byte(bound), ContentType: "text/plain; charset=utf-8", Idempotent: true, Operation: op,
+		Body: []byte(sql), ContentType: "text/plain; charset=utf-8", Idempotent: true, Operation: op,
 	})
 	if err != nil {
 		return nil, remapQueryError(err, capt)

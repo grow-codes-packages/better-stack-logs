@@ -1,26 +1,32 @@
 # Functions
 
 The Better Stack Logs API of this SDK. Every function exists in all five languages with the same
-behaviour; this page shows each one with an example per language.
+behaviour, named per language convention (`searchLogs` in TypeScript and Java, `search_logs` in
+Python and Rust, `SearchLogs` in Go). Each page shows every function with an example per language.
 
-!!! info "Work in progress"
-    The service functions are being added. Until then the client offers the shared surface:
-    [`health()`, `ping()`, `serverVersion()`, `close()`](client.md).
-
-## Overview
-
-| Function | Description | Integration test |
+| Page | Functions | Better Stack host |
 | - | - | - |
-| `health()` | unauthenticated liveness | `core.health` |
-| `ping()` | authenticated round trip | `core.health` |
-| `serverVersion()` | server version | `core.health` |
+| [Client](client.md) | `fromEnv`, `health`, `ping`, `serverVersion`, `close` | both |
+| [Ingest](functions/ingest.md) | `exporter`, `newExporter`, `export`, `sendEvents`, `otlpExporter`, `newOtlpExporter` | ingesting host (Bearer source token) |
+| [SQL query](functions/query.md) | `query()`, `query`, `queryRaw`, `searchLogs`, `renderSearchSql`, `escapeParamValue`, `sqlString`, `jsonEscape`, `logRecordFromRow` | SQL host (ClickHouse HTTP, Basic) |
+| [Log client and search](functions/logging.md) | `logClient`, `send`, `sendBatch`, `flush`, `stats`, `logger`, `search`, `tail`, `listStreams`, `listLabels`, `waitForLog`, adapters | both |
 
-## Service configuration
+## Integration coverage
 
-| Setting | Default | Environment variables (precedence order) |
-| - | - | - |
-| `url` | `http://127.0.0.1:8080` | `GROW_BETTER_STACK_LOGS_URL` |
-| `token` | none | `GROW_BETTER_STACK_LOGS_TOKEN` |
+Every public function is called against the Better Stack stub in the Docker suite
+(`make test-docker`), with a round trip: what the SDK sends to the ingest host is read back through
+the SQL API.
 
-Environment variables recognised by this SDK (explicit config values always win; `GROW_*` names
-come before vendor names): `BETTERSTACK_SOURCE_TOKEN`, `BETTERSTACK_INGESTING_HOST`, `BETTERSTACK_QUERY_HOST`, `BETTERSTACK_QUERY_USERNAME`/`PASSWORD` (SQL API), `GROW_BETTER_STACK_LOGS_*`.
+| Function | Docker round trip |
+| - | - |
+| `health`, `ping` (both sides and ingest-only), `serverVersion`, `close` | yes (`core.health` conformance scenario plus service tests) |
+| `exporter` / `newExporter` / `sendEvents` (JSON, NDJSON, MessagePack, with and without gzip) | yes, read back with `query` |
+| `export` (records with severity, trace ids, resource, attributes) | yes, read back with `searchLogs` |
+| `otlpExporter` / `newOtlpExporter` (protobuf; JSON where supported) | yes, read back with `waitForLog` |
+| `logClient` (HTTP and OTLP), `logger`, `send`, `sendBatch`, `flush`, `stats` | yes (`logging.*` conformance scenarios) |
+| `query` (bound parameters incl. a value with a backslash and a quote, `FORMAT JSON`), `queryRaw` | yes |
+| `searchLogs` (window, order, limit, cursor, quotes), `search`, `waitForLog`, `tail`, `listStreams` | yes |
+| `listLabels` | yes (`UNSUPPORTED`) |
+| error mapping: 403, 402, 406, 401/516, 404/60, 47, 400/62, 429 with `Retry-After`, 503 | yes (stub fault control) |
+
+Cases the stub cannot produce are unit-tested only; see [Compatibility](compatibility.md).

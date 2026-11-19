@@ -14,6 +14,7 @@ import {
   UnsupportedError,
   ValidationError,
   formatDateTime64,
+  escapeParamValue,
   jsonEscape,
   logRecordFromRow,
   parseDateTime,
@@ -211,6 +212,17 @@ describe("BetterStackQuery.query", () => {
     await transport.close();
   });
 
+  it("escapes String parameter values in the ClickHouse escaped (TSV) format (DECISIONS 12)", async () => {
+    expect(escapeParamValue("plain 'quoted' \"text\"")).toBe("plain 'quoted' \"text\"");
+    expect(escapeParamValue("a\\b\tc\nd\re")).toBe("a\\\\b\\tc\\nd\\re");
+    expect(escapeParamValue("\\N")).toBe("\\\\N");
+    const { s, q } = await setup([{ status: 200, body: "" }]);
+    await q.query("SELECT {v:String} AS v", { v: `C:\\tmp\\it's "x"\n` });
+    expect(Object.fromEntries(s.requests[0]?.query ?? [])).toEqual({
+      param_v: `C:\\\\tmp\\\\it's "x"\\n`,
+    });
+  });
+
   it("keeps a JSON FORMAT clause and rejects other formats", async () => {
     const { s, q } = await setup([replyFrom("query.json_format")]);
     expect(await q.query("SELECT count() AS c FROM remote(t1_grow_sdk_logs) FORMAT JSON")).toEqual([
@@ -300,16 +312,16 @@ describe("BetterStackQuery.searchLogs", () => {
       }),
     ).toBe(
       "SELECT dt, raw FROM (SELECT dt, raw FROM remote(t1_app_logs) UNION ALL SELECT dt, raw FROM s3Cluster(primary, t1_app_s3) WHERE _row_type = 1) " +
-        "WHERE dt BETWEEN toDateTime64('2026-11-18 00:00:00.000000', 6) AND toDateTime64('2026-11-18 01:00:00.000000', 6) " +
+        "WHERE dt BETWEEN toDateTime64('2026-11-18 00:00:00.000000', 6, 'UTC') AND toDateTime64('2026-11-18 01:00:00.000000', 6, 'UTC') " +
         `AND position(raw, 'it\\'s \\\\"x\\\\"') > 0 ORDER BY dt ASC LIMIT 3 FORMAT JSONEachRow`,
     );
     // defaults: configured table, last 24 h, no upper bound, newest first, 100 rows
     expect(q.renderSearchSql()).toBe(
       "SELECT dt, raw FROM (SELECT dt, raw FROM remote(t1_grow_sdk_logs) UNION ALL SELECT dt, raw FROM s3Cluster(primary, t1_grow_sdk_s3) WHERE _row_type = 1) " +
-        "WHERE dt >= toDateTime64('2026-11-17 21:00:00.000000', 6) ORDER BY dt DESC LIMIT 101 FORMAT JSONEachRow",
+        "WHERE dt >= toDateTime64('2026-11-17 21:00:00.000000', 6, 'UTC') ORDER BY dt DESC LIMIT 101 FORMAT JSONEachRow",
     );
     expect(q.renderSearchSql({ end: NOW, contains: "" })).toContain(
-      "BETWEEN toDateTime64('2026-11-17 21:00:00.000000', 6) AND toDateTime64('2026-11-18 21:00:00.000000', 6) ORDER BY",
+      "BETWEEN toDateTime64('2026-11-17 21:00:00.000000', 6, 'UTC') AND toDateTime64('2026-11-18 21:00:00.000000', 6, 'UTC') ORDER BY",
     );
   });
 
