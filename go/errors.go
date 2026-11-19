@@ -96,7 +96,7 @@ func CodeForClickHouse(code int) ErrorCode {
 		return ErrorCodePermissionDenied
 	case 60, 81: // UNKNOWN_TABLE, UNKNOWN_DATABASE
 		return ErrorCodeNotFound
-	case 62, 47, 46, 36, 53, 42, 73, 241: // syntax, identifiers, arguments, types, format, memory limit
+	case 62, 47, 46, 36, 53, 42, 73, 456, 457, 241: // syntax, identifiers, arguments, types, query parameters, memory limit
 		return ErrorCodeValidation
 	case 48: // NOT_IMPLEMENTED
 		return ErrorCodeUnsupported
@@ -127,7 +127,7 @@ func remapQueryError(err error, c *capture) error {
 	out.Code = code
 	out.Retryable = code.Retryable()
 	if chCode == 241 {
-		out.Message += " (narrow the time range or sample the cold table)"
+		out.Message += " (hint: narrow the time range or sample the cold table)"
 	}
 	return &out
 }

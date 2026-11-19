@@ -131,14 +131,22 @@ func (c *Client) needQuery(op string) error {
 	return nil
 }
 
-// Health checks liveness without credentials and without sending data. With query
+// Health checks liveness without credentials and without sending data
+// (details["endpoint"] is "query" or "ingest"). With query
 // credentials it calls GET {queryUrl}/ping (ClickHouse, "Ok."); otherwise it makes a
 // GET request to the ingesting host, where any HTTP answer below 500 means the host
 // is reachable (status "ok"). An unreachable or unhealthy service is reported in the
 // result; it fails only for CANCELLED and CONFIG.
 func (c *Client) Health(ctx context.Context) (HealthStatus, error) {
 	if c.query != nil {
-		return c.query.checkHealth(ctx, "health", &request{Method: http.MethodGet, Path: "/ping"})
+		hs, err := c.query.checkHealth(ctx, "health", &request{Method: http.MethodGet, Path: "/ping"})
+		if err == nil {
+			if hs.Details == nil {
+				hs.Details = map[string]string{}
+			}
+			hs.Details["endpoint"] = "query"
+		}
+		return hs, err
 	}
 	res, err := c.ingest.do(ctx, &request{Method: http.MethodGet, Path: "/", Operation: "health", NoRetry: true, RawStatus: true})
 	if err != nil {
@@ -146,9 +154,9 @@ func (c *Client) Health(ctx context.Context) (HealthStatus, error) {
 		case ErrorCodeCancelled, ErrorCodeConfig:
 			return HealthStatus{}, err
 		}
-		return HealthStatus{Status: "unreachable", Details: map[string]string{"error": err.Error()}}, nil
+		return HealthStatus{Status: "unreachable", Details: map[string]string{"error": err.Error(), "endpoint": "ingest"}}, nil
 	}
-	hs := HealthStatus{Status: "ok", Healthy: true, Details: map[string]string{"httpStatus": strconv.Itoa(res.Status)}}
+	hs := HealthStatus{Status: "ok", Healthy: true, Details: map[string]string{"httpStatus": strconv.Itoa(res.Status), "endpoint": "ingest"}}
 	if res.Status >= 500 {
 		hs.Status, hs.Healthy = "unhealthy", false
 	}

@@ -166,7 +166,7 @@ func TestQueryErrors(t *testing.T) {
 	t.Run("clickhouse code mapping", func(t *testing.T) {
 		codes := map[int]ErrorCode{
 			516: ErrorCodeAuthentication, 497: ErrorCodePermissionDenied, 81: ErrorCodeNotFound,
-			48: ErrorCodeUnsupported, 159: ErrorCodeTimeout, 202: ErrorCodeRateLimited, 241: ErrorCodeValidation, 1: "",
+			48: ErrorCodeUnsupported, 159: ErrorCodeTimeout, 456: ErrorCodeValidation, 457: ErrorCodeValidation, 202: ErrorCodeRateLimited, 241: ErrorCodeValidation, 1: "",
 		}
 		for n, want := range codes {
 			if got := CodeForClickHouse(n); got != want {

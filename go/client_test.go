@@ -176,7 +176,7 @@ func TestClientIngestOnly(t *testing.T) {
 
 	t.Run("health ping version", func(t *testing.T) {
 		c := newTestClient(t, ts.URL, nil)
-		if hs, err := c.Health(t.Context()); err != nil || !hs.Healthy || hs.Status != "ok" || hs.Details["httpStatus"] != "405" {
+		if hs, err := c.Health(t.Context()); err != nil || !hs.Healthy || hs.Status != "ok" || hs.Details["httpStatus"] != "405" || hs.Details["endpoint"] != "ingest" {
 			t.Fatalf("health %+v %v", hs, err)
 		}
 		if d, err := c.Ping(t.Context()); err != nil || d <= 0 {
@@ -287,7 +287,7 @@ func TestClientQueryOnly(t *testing.T) {
 
 	t.Run("health ping", func(t *testing.T) {
 		c := newQueryClient(t, srv.URL, nil)
-		if hs, err := c.Health(t.Context()); err != nil || !hs.Healthy || hs.Status != "ok" {
+		if hs, err := c.Health(t.Context()); err != nil || !hs.Healthy || hs.Status != "ok" || hs.Details["endpoint"] != "query" {
 			t.Fatalf("health %+v %v", hs, err)
 		}
 		if _, err := c.Ping(t.Context()); err != nil {
