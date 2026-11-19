@@ -1,0 +1,20 @@
+{
+  "fixture": "health.query_ping",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "GET",
+    "host": "query",
+    "path": "/ping",
+    "headers": {},
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "4"
+    },
+    "body": "Ok.\n"
+  }
+}

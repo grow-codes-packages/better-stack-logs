@@ -1,244 +1,259 @@
-import { inspect } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  AuthenticationError,
+  BetterStackClient,
+  BetterStackLogClient,
+  BetterStackLogExporter,
+  BetterStackOtlpLogExporter,
+  BetterStackQuery,
   ConfigError,
   PACKAGE_KEY,
-  REDACTED,
-  RetryPolicy,
-  Secret,
-  VENDOR_ENV,
-  BetterStackClient,
-  BetterStackConfig,
-  BetterStackError,
+  SDK_VERSION,
+  UnsupportedError,
 } from "../src/index.js";
-import { type MockServer, closedPort, startServer } from "./helpers/server.js";
+import { closedPort } from "./helpers/server.js";
+import { type RawServer, rawServer, replyFrom } from "./support/fixtures.js";
 
-const servers: MockServer[] = [];
+const servers: RawServer[] = [];
+const clients: BetterStackClient[] = [];
 afterEach(async () => {
+  await Promise.all(clients.splice(0).map((c) => c.close()));
   await Promise.all(servers.splice(0).map((s) => s.close()));
 });
 
-async function demoServer(token = "t0ken-value"): Promise<MockServer> {
-  const s = await startServer((req) => {
-    if (req.url === "/health") return { status: 200, body: { status: "ok", version: "1.2.3" } };
-    if (req.url === "/version") return { status: 200, body: { version: "1.2.3" } };
-    if (req.url === "/v1/ping") {
-      return req.headers.authorization === `Bearer ${token}`
-        ? { status: 200, body: { pong: true } }
-        : { status: 401, body: { message: "bad token" } };
-    }
-    return { status: 404 };
-  });
+const TOKEN = "src-token-value";
+const PASSWORD = "query-password-value";
+const fast = { retry: { maxRetries: 1, initialBackoffMs: 1 } };
+
+async function server(...args: Parameters<typeof rawServer>): Promise<RawServer> {
+  const s = await rawServer(...args);
   servers.push(s);
   return s;
 }
 
-const fast = { retry: { maxRetries: 1, initialBackoffMs: 1 } };
+function client(options: ConstructorParameters<typeof BetterStackClient>[0]): BetterStackClient {
+  const c = new BetterStackClient({ ...fast, ...(options as object) });
+  clients.push(c);
+  return c;
+}
 
-describe("BetterStackConfig", () => {
-  it("uses defaults and freezes", () => {
-    const c = new BetterStackConfig();
-    expect(c.url).toBe(BetterStackConfig.DEFAULT_URL);
-    expect(c.requestTimeoutMs).toBe(30_000);
-    expect(c.retry).toBeInstanceOf(RetryPolicy);
-    expect(c.token).toBeUndefined();
-    expect(Object.isFrozen(c)).toBe(true);
-    expect(BetterStackConfig.from(c)).toBe(c);
-    expect(BetterStackConfig.from().url).toBe(c.url);
-    const prefix = `GROW_${PACKAGE_KEY.toUpperCase().replaceAll("-", "_")}_`;
-    expect(BetterStackConfig.ENV_PREFIX).toBe(prefix);
+const ingestOpts = (s: RawServer) => ({ url: s.url, sourceToken: TOKEN });
+const queryOpts = (s: RawServer) => ({
+  queryUrl: s.url,
+  queryUsername: "user-a",
+  queryPassword: PASSWORD,
+});
+
+describe("BetterStackClient.health", () => {
+  it("uses GET /ping on the query host without credentials", async () => {
+    const q = await server([replyFrom("health.query_ping")]);
+    const h = await client(queryOpts(q)).health();
+    expect(h).toEqual({ healthy: true, status: "ok", details: { endpoint: "query" } });
+    expect(q.requests[0]?.path).toBe("/ping");
+    expect(q.requests[0]?.headers.authorization).toBeUndefined();
   });
 
-  it("keeps optional settings", () => {
-    const hooks = {};
-    const logger = { debug() {}, info() {}, warn() {}, error() {} };
-    const c = new BetterStackConfig({
-      proxy: "http://p:1",
-      userAgentSuffix: "s",
-      hooks,
-      logger,
-      token: new Secret("abcd"),
+  it("treats an empty /ping body as ok", async () => {
+    const q = await server([{ status: 200, body: "" }]);
+    expect((await client(queryOpts(q)).health()).status).toBe("ok");
+  });
+
+  it("probes the ingest host when only ingest is configured (no data, no token)", async () => {
+    const i = await server([replyFrom("health.ingest_get_root")]);
+    const h = await client(ingestOpts(i)).health();
+    expect(h).toEqual({
+      healthy: true,
+      status: "ok",
+      details: { endpoint: "ingest", httpStatus: "405" },
     });
-    expect(c.proxy).toBe("http://p:1");
-    expect(c.userAgentSuffix).toBe("s");
-    expect(c.hooks).toBe(hooks);
-    expect(c.logger).toBe(logger);
-    expect(c.knownSecrets()).toEqual(["abcd"]);
+    expect(i.requests[0]?.method).toBe("GET");
+    expect(i.requests[0]?.headers.authorization).toBeUndefined();
   });
 
-  it("validate() raises ConfigError", () => {
-    expect(() => new BetterStackConfig({ url: "ftp://x" })).toThrow(ConfigError);
-    expect(() => new BetterStackConfig({ token: "   " })).toThrow(ConfigError);
-  });
-
-  it("core.redaction.config: toString/JSON/inspect hide credentials", () => {
-    const c = new BetterStackConfig({
-      token: "super-secret-tok",
-      headers: { "x-api-key": "hdr-secret" },
+  it("reports 5xx from the ingest host as unhealthy", async () => {
+    const i = await server([{ status: 503, body: "down" }]);
+    expect(await client(ingestOpts(i)).health()).toEqual({
+      healthy: false,
+      status: "unhealthy",
+      details: { endpoint: "ingest", httpStatus: "503" },
     });
-    for (const form of [String(c), JSON.stringify(c), inspect(c), `${c.token}`]) {
-      expect(form).not.toContain("super-secret-tok");
-      expect(form).not.toContain("hdr-secret");
-    }
-    expect(String(c)).toContain(REDACTED);
-    expect(String(c)).toMatch(/Config\(/);
-    expect(new BetterStackConfig().toJSON().token).toBeNull();
   });
 
-  it("core.config.env-precedence: explicit > GROW_* > vendor > default", () => {
-    const prefix = BetterStackConfig.ENV_PREFIX;
-    const vendor = VENDOR_ENV as { url: string[]; token: string[] };
-    const saved = { url: vendor.url, token: vendor.token };
-    vendor.url = ["VENDOR_ADDR"];
-    vendor.token = ["VENDOR_TOKEN"];
-    try {
-      const env = {
-        [`${prefix}URL`]: "http://grow:1",
-        VENDOR_ADDR: "http://vendor:2",
-        VENDOR_TOKEN: "vendor-token",
-        [`${prefix}REQUEST_TIMEOUT`]: "5s",
-        [`${prefix}MAX_RETRIES`]: "7",
-      };
-      const fromEnv = BetterStackConfig.fromEnv({}, env);
-      expect(fromEnv.url).toBe("http://grow:1");
-      expect(fromEnv.token?.reveal()).toBe("vendor-token");
-      expect(fromEnv.requestTimeoutMs).toBe(5000);
-      expect(fromEnv.retry.maxRetries).toBe(7);
-      expect(fromEnv.connectTimeoutMs).toBe(10_000);
+  it("reports a failing /ping as unhealthy", async () => {
+    const q = await server([{ status: 500, body: "boom" }]);
+    expect(await client(queryOpts(q)).health()).toMatchObject({
+      healthy: false,
+      status: "unhealthy",
+    });
+  });
 
-      const vendorOnly = BetterStackConfig.fromEnv({}, { VENDOR_ADDR: "http://vendor:2" });
-      expect(vendorOnly.url).toBe("http://vendor:2");
+  it("core.health.unreachable: closed port → healthy=false, status=unreachable", async () => {
+    const port = await closedPort();
+    const h = await client({ url: `http://127.0.0.1:${port}`, sourceToken: TOKEN }).health();
+    expect(h).toEqual({ healthy: false, status: "unreachable", details: { error: "UNAVAILABLE" } });
+  });
 
-      const explicit = BetterStackConfig.fromEnv(
-        { url: "http://explicit:3", token: "explicit-token", retry: { initialBackoffMs: 1 } },
-        env,
-      );
-      expect(explicit.url).toBe("http://explicit:3");
-      expect(explicit.token?.reveal()).toBe("explicit-token");
-      expect(explicit.retry.maxRetries).toBe(7);
-      expect(explicit.retry.initialBackoffMs).toBe(1);
-
-      expect(BetterStackConfig.fromEnv({}, {}).url).toBe(BetterStackConfig.DEFAULT_URL);
-      expect(BetterStackConfig.fromEnv().url).toBeTypeOf("string");
-
-      let err: unknown;
-      try {
-        BetterStackConfig.fromEnv({}, { [`${prefix}TOTAL_TIMEOUT`]: "forever-and-secret" });
-      } catch (e) {
-        err = e;
-      }
-      expect(err).toBeInstanceOf(ConfigError);
-      expect((err as Error).message).toContain(`${prefix}TOTAL_TIMEOUT`);
-      expect((err as Error).message).not.toContain("forever-and-secret");
-    } finally {
-      vendor.url = saved.url;
-      vendor.token = saved.token;
-    }
+  it("rethrows cancellation", async () => {
+    const q = await server([replyFrom("health.query_ping")]);
+    await expect(
+      client(queryOpts(q)).health({ signal: AbortSignal.abort() }),
+    ).rejects.toMatchObject({ code: "CANCELLED" });
   });
 });
 
-describe("BetterStackClient", () => {
-  it("health, ping and serverVersion against the demo API", async () => {
-    const s = await demoServer();
-    const client = new BetterStackClient({ url: s.url, token: "t0ken-value", ...fast });
-    expect(await client.health()).toEqual({
-      healthy: true,
-      status: "ok",
-      details: { version: "1.2.3" },
-    });
-    expect(await client.ping()).toBeGreaterThanOrEqual(0);
-    expect(await client.serverVersion()).toBe("1.2.3");
-    expect(client.transport.userAgent).toContain(`grow-codes-${PACKAGE_KEY}/`);
-    await client.close();
-  });
-
-  it("ping with a bad token raises AuthenticationError without leaking it", async () => {
-    const s = await demoServer();
-    const client = new BetterStackClient(
-      new BetterStackConfig({ url: s.url, token: "wrong-token-xyz", ...fast }),
+describe("BetterStackClient.ping", () => {
+  it("runs SELECT count() … WHERE 1 = 0 on the configured collection with Basic auth", async () => {
+    const q = await server([replyFrom("ping.fallback_count")]);
+    const c = client({ ...queryOpts(q), sourceTable: "t1_grow_sdk" });
+    expect(await c.ping()).toBeGreaterThanOrEqual(0);
+    const req = q.requests[0];
+    expect(req?.text).toBe(
+      "SELECT count() AS c FROM remote(t1_grow_sdk_logs) WHERE 1 = 0 FORMAT JSONEachRow",
     );
-    const err = await client.ping().catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(BetterStackError);
-    expect((err as BetterStackError).code).toBe("AUTHENTICATION");
-    expect((err as Error).message).not.toContain("wrong-token-xyz");
-    await client.close();
-  });
-
-  it("serverVersion raises UnsupportedError when absent", async () => {
-    const s = await startServer([{ status: 404 }]);
-    servers.push(s);
-    const client = new BetterStackClient({ url: s.url, ...fast });
-    await expect(client.serverVersion()).rejects.toMatchObject({ code: "UNSUPPORTED" });
-    const s2 = await startServer([{ status: 200, body: { other: 1 } }]);
-    servers.push(s2);
-    const client2 = new BetterStackClient({ url: s2.url, ...fast });
-    await expect(client2.serverVersion()).rejects.toMatchObject({ code: "UNSUPPORTED" });
-    await client.close();
-    await client2.close();
-  });
-
-  it("health reports vendor words and unhealthy statuses", async () => {
-    const s = await startServer((req) =>
-      req.url === "/health"
-        ? { status: 200, body: { status: "degraded" } }
-        : { status: 200, body: "" },
+    expect(req?.headers.authorization).toBe(
+      `Basic ${Buffer.from(`user-a:${PASSWORD}`).toString("base64")}`,
     );
-    servers.push(s);
-    const degraded = new BetterStackClient({ url: s.url, ...fast });
-    expect(await degraded.health()).toMatchObject({ healthy: false, status: "degraded" });
-    await degraded.close();
-    const empty = await startServer([{ status: 200 }]);
-    servers.push(empty);
-    const ok = new BetterStackClient({ url: empty.url, ...fast });
-    expect(await ok.health()).toMatchObject({ healthy: true, status: "ok" });
-    await ok.close();
-    const down = await startServer([{ status: 500 }]);
-    servers.push(down);
-    const sick = new BetterStackClient({ url: down.url, ...fast });
-    expect(await sick.health()).toMatchObject({ healthy: false, status: "unhealthy" });
-    await sick.close();
   });
 
-  it("core.health.unreachable: closed port -> healthy=false, status=unreachable", async () => {
-    const port = await closedPort();
-    const client = new BetterStackClient({ url: `http://127.0.0.1:${port}`, ...fast });
-    expect(await client.health()).toEqual({
-      healthy: false,
-      status: "unreachable",
-      details: { error: "UNAVAILABLE" },
-    });
-    await client.close();
+  it("runs SELECT 1 without a collection", async () => {
+    const q = await server([{ status: 200, body: '{"ok":1}\n' }]);
+    await client(queryOpts(q)).ping({ signal: new AbortController().signal });
+    expect(q.requests[0]?.text).toBe("SELECT 1 AS ok FORMAT JSONEachRow");
   });
 
-  it("health rethrows cancellation", async () => {
-    const s = await demoServer();
-    const client = new BetterStackClient({ url: s.url });
-    await expect(client.health({ signal: AbortSignal.abort() })).rejects.toMatchObject({
-      code: "CANCELLED",
-    });
-    await client.close();
+  it("maps a bad SQL password to AuthenticationError without leaking it", async () => {
+    const q = await server([replyFrom("query.401_bad_password")]);
+    const err = await client(queryOpts(q))
+      .ping()
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(AuthenticationError);
+    expect((err as Error).message).not.toContain(PASSWORD);
   });
 
-  it("core.close.idempotent: close twice is safe", async () => {
-    const s = await demoServer();
-    const client = new BetterStackClient({ url: s.url });
-    await client.health();
-    await client.close();
-    await client.close();
-    await expect(client.ping()).rejects.toMatchObject({ code: "CONFIG" });
+  it("posts an empty batch with the source token when only ingest is configured", async () => {
+    const i = await server([{ status: 202 }]);
+    expect(await client(ingestOpts(i)).ping()).toBeGreaterThanOrEqual(0);
+    const req = i.requests[0];
+    expect(req?.method).toBe("POST");
+    expect(req?.text).toBe("[]");
+    expect(req?.headers.authorization).toBe(`Bearer ${TOKEN}`);
+    expect(req?.headers["content-type"]).toBe("application/json");
   });
 
-  it("fromEnv builds from GROW_* variables", async () => {
-    const s = await demoServer();
-    const key = `${BetterStackConfig.ENV_PREFIX}URL`;
-    process.env[key] = s.url;
+  it("maps ingest 403 to AuthenticationError (not PermissionDenied)", async () => {
+    const i = await server([replyFrom("send.403_bad_token")]);
+    const err = await client(ingestOpts(i))
+      .ping({ signal: new AbortController().signal })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(AuthenticationError);
+    expect((err as AuthenticationError).httpStatus).toBe(403);
+    expect((err as Error).message).not.toContain(TOKEN);
+  });
+});
+
+describe("BetterStackClient surface", () => {
+  it("serverVersion is unsupported", async () => {
+    const i = await server([{ status: 202 }]);
+    await expect(client(ingestOpts(i)).serverVersion()).rejects.toBeInstanceOf(UnsupportedError);
+  });
+
+  it("never sends one side's credentials to the other host", async () => {
+    const i = await server([{ status: 202 }]);
+    const q = await server([{ status: 200, body: "" }]);
+    const c = client({ ...ingestOpts(i), ...queryOpts(q), sourceTable: "t1_x" });
+    await c.exporter.sendEvents([{ message: "x" }]);
+    await c.query().query("SELECT 1");
+    expect(i.requests[0]?.headers.authorization).toBe(`Bearer ${TOKEN}`);
+    expect(q.requests[0]?.headers.authorization).toMatch(/^Basic /);
+    expect(JSON.stringify(q.requests[0]?.headers)).not.toContain(TOKEN);
+  });
+
+  it("core.useragent: grow-codes-<key>/<version> (typescript)", async () => {
+    const i = await server([{ status: 202 }]);
+    await client({ ...ingestOpts(i), userAgentSuffix: "app/2" }).ping();
+    expect(i.requests[0]?.headers["user-agent"]).toBe(
+      `grow-codes-${PACKAGE_KEY}/${SDK_VERSION} (typescript) app/2`,
+    );
+  });
+
+  it("exporter, otlpExporter and query() are cached accessors", async () => {
+    const i = await server([{ status: 202 }]);
+    const q = await server([{ status: 200 }]);
+    const c = client({ ...ingestOpts(i), ...queryOpts(q) });
+    expect(c.exporter).toBeInstanceOf(BetterStackLogExporter);
+    expect(c.exporter).toBe(c.exporter);
+    expect(c.otlpExporter).toBeInstanceOf(BetterStackOtlpLogExporter);
+    expect(c.otlpExporter).toBe(c.otlpExporter);
+    expect(c.query()).toBeInstanceOf(BetterStackQuery);
+    expect(c.query()).toBe(c.query());
+  });
+
+  it("the missing side raises ConfigError", async () => {
+    const i = await server([{ status: 202 }]);
+    const q = await server([{ status: 200 }]);
+    const ingestOnly = client(ingestOpts(i));
+    expect(() => ingestOnly.query()).toThrow(ConfigError);
+    const queryOnly = client(queryOpts(q));
+    expect(() => queryOnly.exporter).toThrow(ConfigError);
+    expect(() => queryOnly.otlpExporter).toThrow(ConfigError);
+    expect(() => queryOnly.logClient()).toThrow(/ingesting host/);
+  });
+
+  it("logClient builds HTTP and OTLP clients and close() flushes them", async () => {
+    const i = await server([{ status: 202 }]);
+    const c = new BetterStackClient({ ...ingestOpts(i), ...fast });
+    const http = c.logClient({ batch: { flushIntervalMs: 60_000 } });
+    expect(http).toBeInstanceOf(BetterStackLogClient);
+    expect(http.exporter).toBe(c.exporter);
+    const ndjson = c.logClient({ exporter: { encoding: "ndjson" } });
+    expect(ndjson.exporter).toMatchObject({ encoding: "ndjson" });
+    const otlp = c.logClient({ protocol: "otlp" });
+    expect(otlp.exporter).toBe(c.otlpExporter);
+    const otlpJson = c.logClient({ protocol: "otlp", otlp: { protocol: "json" } });
+    expect(otlpJson.exporter).toMatchObject({ protocol: "json" });
+    expect(() => c.logClient({ protocol: "grpc" as never })).toThrow(ConfigError);
+    http.logger().info("flushed on close", { n: 1 });
+    await c.close();
+    await c.close();
+    expect(i.requests).toHaveLength(1);
+    expect(JSON.parse(i.requests[0]?.text ?? "[]")[0].message).toBe("flushed on close");
+    expect(() => c.logClient()).toThrow(/closed/);
+  });
+
+  it("core.close.idempotent: close twice is safe and later calls fail with CONFIG", async () => {
+    const q = await server([replyFrom("health.query_ping")]);
+    const c = new BetterStackClient(queryOpts(q));
+    await c.health();
+    await c.close();
+    await c.close();
+    await expect(c.query().query("SELECT 1")).rejects.toMatchObject({ code: "CONFIG" });
+  });
+
+  it("an unreadable TLS file raises ConfigError", () => {
+    expect(
+      () =>
+        new BetterStackClient({
+          url: "https://i.test",
+          sourceToken: TOKEN,
+          tls: { caCertPath: "/nonexistent/ca.pem" },
+        }),
+    ).toThrow(/TLS file/);
+  });
+
+  it("fromEnv builds from GROW_* and vendor variables", async () => {
+    const i = await server([{ status: 202 }]);
+    const vars = {
+      GROW_BETTER_STACK_LOGS_URL: i.url,
+      BETTERSTACK_SOURCE_TOKEN: TOKEN,
+    };
+    Object.assign(process.env, vars);
     try {
-      const client = BetterStackClient.fromEnv({ token: "t0ken-value" });
-      expect(client.config.url).toBe(s.url);
-      expect(await client.ping()).toBeGreaterThanOrEqual(0);
-      await client.close();
+      const c = BetterStackClient.fromEnv({ retry: { maxRetries: 0 } });
+      clients.push(c);
+      expect(c.config.url).toBe(i.url);
+      expect(await c.ping()).toBeGreaterThanOrEqual(0);
     } finally {
-      delete process.env[key];
+      for (const k of Object.keys(vars)) Reflect.deleteProperty(process.env, k);
     }
   });
 });

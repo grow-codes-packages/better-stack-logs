@@ -10,15 +10,27 @@ npm install @grow-codes/better-stack-logs
 ```ts
 import { BetterStackClient } from "@grow-codes/better-stack-logs";
 
-// Reads GROW_BETTER_STACK_LOGS_URL, GROW_BETTER_STACK_LOGS_TOKEN, timeouts, TLS and proxy settings.
+// Ingest: BETTERSTACK_INGESTING_HOST + BETTERSTACK_SOURCE_TOKEN (or GROW_BETTER_STACK_LOGS_URL /
+// _SOURCE_TOKEN). SQL query: BETTERSTACK_QUERY_HOST, _QUERY_USERNAME, _QUERY_PASSWORD, _SOURCE_TABLE.
 const client = BetterStackClient.fromEnv();
 try {
-  console.log(await client.health()); // { healthy: true, status: "ok", details: {} }
-  console.log(`ping: ${(await client.ping()).toFixed(1)} ms`);
+  const logs = client.logClient({ resource: { "service.name": "checkout" } });
+  logs.logger().info("order placed", { orderId: 42 }); // batched, gzipped, redacted
+  await logs.flush();
+
+  const found = await client.query().waitForLog("order placed", { timeoutMs: 60_000 });
+  console.log(found.timestamp, found.body, found.attributes);
 } finally {
-  await client.close();
+  await client.close(); // flushes every log client
 }
 ```
+
+| Area | API |
+| - | - |
+| Client | `BetterStackClient` (`fromEnv`, `health`, `ping`, `serverVersion` → `UNSUPPORTED`, `close`) |
+| Ingest | `logClient({ protocol: "http" \| "otlp" })` → `BetterStackLogClient`, `exporter` (`BetterStackLogExporter`: JSON / NDJSON / MessagePack, gzip, 10 MiB splitting, `sendEvents`), `otlpExporter` (OTLP/HTTP `/v1/logs`, protobuf or JSON) |
+| Query | `query()` → `BetterStackQuery`: `query(sql, params)`, `queryRaw`, `searchLogs({ source, contains, start, end, limit, order, cursor })`, `search`, `waitForLog`, `tail` (polling), `listStreams` |
+| Logging | `Logger`, `BatchProcessor`, `RedactionProcessor`, pino / winston transports |
 
 Every error is a `BetterStackError` subclass with a canonical `code` (`NOT_FOUND`,
 `AUTHENTICATION`, `RATE_LIMITED`, …), `httpStatus`, `requestId` and `retryable`. Credentials
