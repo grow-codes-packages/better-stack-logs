@@ -1,0 +1,25 @@
+{
+  "fixture": "sendBatch.msgpack",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/",
+    "headers": {
+      "content-type": "application/msgpack",
+      "authorization": "<redacted>"
+    },
+    "body": {
+      "base64": "3AAC3gAEp21lc3NhZ2XaACJuZWVkbGUtcHJlcC0yMDhjZGNhIG1zZ3BhY2sgdHMtZXh0omR0xwz/KHc1CAAAAABlk30loW4Hom9rw94AAqdtZXNzYWdlvm5lZWRsZS1wcmVwLTIwOGNkY2EgbXNncGFjayBuc6JkdNMXl50sznOdFQ==",
+      "bytes": 130
+    }
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "content-length": "0"
+    },
+    "body": null
+  }
+}

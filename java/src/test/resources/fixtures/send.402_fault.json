@@ -1,0 +1,25 @@
+{
+  "fixture": "send.402_fault",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": "injected with POST /__stub/fault (402 is documented; 429/503 are synthetic transport cases)",
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/",
+    "headers": {
+      "content-type": "application/json",
+      "authorization": "<redacted>"
+    },
+    "body": {
+      "message": "fault"
+    }
+  },
+  "response": {
+    "status": 402,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "14"
+    },
+    "body": "Quota exceeded"
+  }
+}

@@ -1,10 +1,10 @@
 package codes.grow.packages.betterstack;
 
 import codes.grow.packages.betterstack.core.AuthenticationException;
+import codes.grow.packages.betterstack.core.BetterStackException;
 import codes.grow.packages.betterstack.core.CancelledException;
 import codes.grow.packages.betterstack.core.ConfigException;
 import codes.grow.packages.betterstack.core.EnvReader;
-import codes.grow.packages.betterstack.core.HealthCheck;
 import codes.grow.packages.betterstack.core.HealthStatus;
 import codes.grow.packages.betterstack.core.Hooks;
 import codes.grow.packages.betterstack.core.HttpTransport;
@@ -15,53 +15,91 @@ import codes.grow.packages.betterstack.core.TlsOptions;
 import codes.grow.packages.betterstack.core.TransportRequest;
 import codes.grow.packages.betterstack.core.TransportResponse;
 import codes.grow.packages.betterstack.core.UnsupportedException;
-import com.fasterxml.jackson.databind.JsonNode;
+import codes.grow.packages.betterstack.logging.BatchOptions;
+import codes.grow.packages.betterstack.logging.BatchingLogClient;
+import codes.grow.packages.betterstack.logging.LogExporter;
+import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Client for Better Stack Logs.
- *
- * <p>Implements SPEC section 2.4. Thread-safe; create one per endpoint and close it when done.
+ * Client for Better Stack Logs: ingestion through the source's ingesting host ({@link
+ * #logClient()}, {@link #exporter()}, {@link #otlpExporter()}) and the SQL query API ({@link
+ * #query()}), each with its own credentials and transport. A source token is never sent to the
+ * query host and SQL credentials never to the ingesting host.
  *
  * <pre>{@code
  * try (BetterStackClient client = BetterStackClient.fromEnv()) {
- *   HealthStatus health = client.health();
- * }
+ *   BatchingLogClient logs = client.logClient(
+ *       BetterStackLogClientOptions.builder().resource(Map.of("service.name", "checkout")).build());
+ *   logs.logger().info("order placed", Map.of("orderId", 42));
+ * } // close() flushes every log client
  * }</pre>
  *
- * <p>Every I/O method has a blocking form and an {@code …Async} form returning {@link
- * CompletableFuture}. This file is owned by the service package (generated once by sdk-kit); add
- * service modules here.
+ * <p>Thread-safe. Every I/O method has a blocking form and an {@code …Async} form returning {@link
+ * CompletableFuture}.
  */
 public final class BetterStackClient implements AutoCloseable {
   private final BetterStackConfig config;
-  private final HttpTransport transport;
+  private final HttpTransport ingest;
+  private final HttpTransport queryTransport;
   private final AtomicBoolean closed = new AtomicBoolean();
   private final List<AutoCloseable> resources = new ArrayList<>();
+  private final BetterStackLogExporter exporter;
+  private final BetterStackOtlpLogExporter otlp;
+  private final BetterStackQuery query;
 
-  private BetterStackClient(BetterStackConfig config) {
+  private BetterStackClient(BetterStackConfig config, Clock clock) {
     this.config = config;
-    this.transport = new HttpTransport(config.toTransportConfig());
+    this.ingest = config.hasIngest() ? new HttpTransport(config.ingestTransportConfig()) : null;
+    HttpTransport q = null;
+    try {
+      q = config.hasQuery() ? new HttpTransport(config.queryTransportConfig()) : null;
+    } catch (RuntimeException e) {
+      if (ingest != null) {
+        ingest.close();
+      }
+      throw e;
+    }
+    this.queryTransport = q;
+    this.exporter =
+        ingest == null
+            ? null
+            : new BetterStackLogExporter(ingest, config, BetterStackLogExporterOptions.defaults());
+    this.otlp =
+        ingest == null
+            ? null
+            : new BetterStackOtlpLogExporter(
+                ingest, config, BetterStackOtlpLogExporterOptions.defaults());
+    this.query = q == null ? null : new BetterStackQuery(this, q, config, clock);
   }
 
   /**
    * Creates a client.
    *
-   * @param config validated configuration
+   * @param config configuration
    * @return a new client
-   * @throws ConfigException when TLS or proxy settings are invalid
+   * @throws ConfigException when the configuration, TLS or proxy settings are invalid
    */
   public static BetterStackClient create(BetterStackConfig config) {
+    return create(config, Clock.systemUTC());
+  }
+
+  static BetterStackClient create(BetterStackConfig config, Clock clock) {
     config.validate();
-    return new BetterStackClient(config);
+    return new BetterStackClient(config, clock);
   }
 
   /**
-   * Creates a client from the SDK and vendor environment variables.
+   * Creates a client from {@code GROW_BETTER_STACK_LOGS_*} and the vendor variables ({@code
+   * BETTERSTACK_SOURCE_TOKEN}, {@code BETTERSTACK_INGESTING_HOST}, {@code BETTERSTACK_QUERY_*}, …).
    *
    * @return a new client
    */
@@ -88,33 +126,43 @@ public final class BetterStackClient implements AutoCloseable {
   }
 
   /**
-   * Returns the HTTP transport, for service modules built on this client.
-   *
-   * @return the transport
-   */
-  public HttpTransport transport() {
-    return transport;
-  }
-
-  /**
-   * Registers a resource (watcher, renewer, batch processor) closed with the client.
+   * Registers a resource (log client, tail) closed with the client.
    *
    * @param resource the resource
+   * @throws CancelledException when the client is closed (the resource is closed first)
    */
   public void register(AutoCloseable resource) {
     synchronized (resources) {
-      resources.add(resource);
+      if (!closed.get()) {
+        resources.add(resource);
+        return;
+      }
     }
+    closeQuietly(resource);
+    throw new CancelledException("register: client is closed");
   }
 
+  private HttpTransport ingestTransport(String operation) {
+    if (ingest == null) {
+      throw new ConfigException(
+          operation + ": url (the source's ingesting host) and sourceToken are required");
+    }
+    return ingest;
+  }
+
+  // ------------------------------------------------------------------------------- core
+
   /**
-   * Checks liveness ({@code GET /health}). Never throws for an unhealthy or unreachable service.
+   * Unauthenticated liveness check that never sends data. With a query host: {@code GET
+   * {queryUrl}/ping} ({@code Ok.}). Ingest-only: {@code GET {url}/} without credentials; any answer
+   * below 500 means the host is reachable. {@code details.endpoint} is {@code query} or {@code
+   * ingest}. Never throws for an unhealthy or unreachable service.
    *
    * @return the health status
    * @throws CancelledException when interrupted or closed
    */
   public HealthStatus health() {
-    return HealthCheck.check(transport, "/health");
+    return HttpTransport.await(healthAsync(), "health");
   }
 
   /**
@@ -123,11 +171,59 @@ public final class BetterStackClient implements AutoCloseable {
    * @return a future with the health status
    */
   public CompletableFuture<HealthStatus> healthAsync() {
-    return HealthCheck.checkAsync(transport, "/health");
+    boolean viaQuery = queryTransport != null;
+    HttpTransport t = viaQuery ? queryTransport : ingest;
+    String endpoint = viaQuery ? "query" : "ingest";
+    TransportRequest req =
+        TransportRequest.get(viaQuery ? "/ping" : "/")
+            .operation("health")
+            .acceptAnyStatus()
+            .maxRetries(0)
+            .header("Accept", "*/*")
+            .build();
+    return t.sendAsync(req)
+        .handle(
+            (resp, err) -> {
+              if (err != null) {
+                BetterStackException e = HttpTransport.asSdkException(err, "health");
+                if (e instanceof CancelledException || e instanceof ConfigException) {
+                  throw e;
+                }
+                return new HealthStatus(
+                    false,
+                    "unreachable",
+                    Map.of("error", String.valueOf(e.getMessage()), "endpoint", endpoint));
+              }
+              return viaQuery ? queryHealth(resp) : ingestHealth(resp);
+            });
+  }
+
+  private static HealthStatus queryHealth(TransportResponse resp) {
+    Map<String, String> details = new LinkedHashMap<>();
+    details.put("endpoint", "query");
+    if (resp.status() < 200 || resp.status() >= 300) {
+      details.put("httpStatus", Integer.toString(resp.status()));
+      return new HealthStatus(false, "unhealthy", details);
+    }
+    String word = new String(resp.body(), StandardCharsets.UTF_8).trim();
+    if (word.endsWith(".")) {
+      word = word.substring(0, word.length() - 1);
+    }
+    return new HealthStatus(true, word.isEmpty() ? "ok" : word.toLowerCase(Locale.ROOT), details);
+  }
+
+  private static HealthStatus ingestHealth(TransportResponse resp) {
+    Map<String, String> details = new LinkedHashMap<>();
+    details.put("endpoint", "ingest");
+    details.put("httpStatus", Integer.toString(resp.status()));
+    boolean ok = resp.status() < 500;
+    return new HealthStatus(ok, ok ? "ok" : "unhealthy", details);
   }
 
   /**
-   * Performs an authenticated round trip ({@code GET /v1/ping}).
+   * Authenticated round trip. With query credentials: {@code SELECT count() AS c FROM
+   * remote(<sourceTable>_logs) WHERE 1 = 0} (or {@code SELECT 1} without a source table).
+   * Ingest-only: posts an empty batch {@code []} (no event is stored).
    *
    * @return the latency
    * @throws AuthenticationException on bad credentials
@@ -143,46 +239,163 @@ public final class BetterStackClient implements AutoCloseable {
    */
   public CompletableFuture<Duration> pingAsync() {
     long start = System.nanoTime();
-    return transport
-        .sendAsync(authorized(TransportRequest.get("/v1/ping").operation("ping")))
-        .thenApply(r -> Duration.ofNanos(System.nanoTime() - start));
+    CompletableFuture<?> call;
+    if (query != null) {
+      String sql =
+          config
+              .sourceTable()
+              .map(t -> "SELECT count() AS c FROM remote(" + t + "_logs) WHERE 1 = 0")
+              .orElse("SELECT 1 AS ok");
+      call = query.queryAsync(sql, Map.of(), QueryOptions.defaults());
+    } else {
+      call =
+          BetterStackErrors.mapFailure(
+              exporter.post(
+                  "[]".getBytes(StandardCharsets.UTF_8), "application/json", false, "ping"),
+              e -> BetterStackErrors.mapIngestError(e, "ping"));
+    }
+    return call.thenApply(r -> Duration.ofNanos(System.nanoTime() - start));
   }
 
   /**
-   * Returns the server version ({@code GET /version}).
+   * Better Stack is a SaaS without a version endpoint (the query host's ClickHouse version is not
+   * one).
    *
-   * @return the version string
-   * @throws UnsupportedException when the server exposes none
+   * @return never
+   * @throws UnsupportedException always
    */
   public String serverVersion() {
     return HttpTransport.await(serverVersionAsync(), "serverVersion");
   }
 
   /**
-   * Asynchronous {@link #serverVersion()}.
+   * Asynchronous {@link #serverVersion()}: always fails with {@link UnsupportedException}.
    *
-   * @return a future with the version
+   * @return a failed future
    */
   public CompletableFuture<String> serverVersionAsync() {
-    return transport
-        .sendAsync(
-            authorized(
-                TransportRequest.get("/version").operation("serverVersion").acceptStatus(404)))
-        .thenApply(BetterStackClient::version);
+    return CompletableFuture.failedFuture(
+        new UnsupportedException("serverVersion: Better Stack does not report a server version"));
   }
 
-  private static String version(TransportResponse r) {
-    JsonNode v = r.status() == 404 ? null : r.jsonNode().get("version");
-    if (v == null || !v.isTextual()) {
-      throw new UnsupportedException("serverVersion: the server exposes no version");
+  // ------------------------------------------------------------------------------ ingest
+
+  /**
+   * The HTTP ingest exporter in the configured encoding with the default limits.
+   *
+   * @return the exporter
+   * @throws ConfigException without ingest credentials
+   */
+  public BetterStackLogExporter exporter() {
+    ingestTransport("exporter");
+    return exporter;
+  }
+
+  /**
+   * A new HTTP ingest exporter with its own encoding and limits (use it with {@link
+   * #logClient(LogExporter, BetterStackLogClientOptions)}).
+   *
+   * @param options encoding and limits
+   * @return the exporter
+   * @throws ConfigException without ingest credentials
+   * @throws codes.grow.packages.betterstack.core.ValidationException for limits outside 1 to 10 MiB
+   */
+  public BetterStackLogExporter newExporter(BetterStackLogExporterOptions options) {
+    return new BetterStackLogExporter(ingestTransport("newExporter"), config, options);
+  }
+
+  /**
+   * The OTLP/HTTP logs exporter (protobuf, {@code /v1/logs}).
+   *
+   * @return the exporter
+   * @throws ConfigException without ingest credentials
+   */
+  public BetterStackOtlpLogExporter otlpExporter() {
+    ingestTransport("otlpExporter");
+    return otlp;
+  }
+
+  /**
+   * A new OTLP exporter with its own payload format, scope name and request limit.
+   *
+   * @param options options
+   * @return the exporter
+   * @throws ConfigException without ingest credentials
+   */
+  public BetterStackOtlpLogExporter newOtlpExporter(BetterStackOtlpLogExporterOptions options) {
+    return new BetterStackOtlpLogExporter(ingestTransport("newOtlpExporter"), config, options);
+  }
+
+  /**
+   * A batching log client over the HTTP ingest API with default options.
+   *
+   * @return the log client
+   * @throws ConfigException without ingest credentials
+   */
+  public BatchingLogClient logClient() {
+    return logClient(BetterStackLogClientOptions.defaults());
+  }
+
+  /**
+   * A batching log client over the HTTP ingest API ({@link LogProtocol#HTTP}, default) or OTLP.
+   * {@link #close()} flushes and closes every log client created here.
+   *
+   * @param options protocol, exporter options, batching, resource, redaction
+   * @return the log client
+   * @throws ConfigException without ingest credentials
+   */
+  public BatchingLogClient logClient(BetterStackLogClientOptions options) {
+    HttpTransport t = ingestTransport("logClient");
+    LogExporter e =
+        options.protocol() == LogProtocol.OTLP
+            ? new BetterStackOtlpLogExporter(t, config, options.otlp())
+            : new BetterStackLogExporter(t, config, options.exporter());
+    return logClient(e, options);
+  }
+
+  /**
+   * A batching log client over any exporter (for example {@link #newExporter}). The protocol and
+   * exporter options of {@code options} are ignored. {@link #close()} flushes and closes it.
+   *
+   * @param exporter the exporter
+   * @param options batching, resource, redaction
+   * @return the log client
+   */
+  public BatchingLogClient logClient(LogExporter exporter, BetterStackLogClientOptions options) {
+    if (closed.get()) {
+      throw new CancelledException("logClient: client is closed");
     }
-    return v.asText();
+    BatchOptions batch = options.batchOptions();
+    if (batch.maxBatchBytes() > BetterStackLogExporter.MAX_REQUEST_BYTES) {
+      batch = batch.toBuilder().maxBatchBytes(BetterStackLogExporter.MAX_REQUEST_BYTES).build();
+    }
+    BatchingLogClient client =
+        BatchingLogClient.builder(exporter)
+            .batchOptions(batch)
+            .resource(options.resource())
+            .redaction(options.redaction())
+            .build();
+    register(client);
+    return client;
   }
 
-  private TransportRequest authorized(TransportRequest.Builder b) {
-    config.token().ifPresent(t -> b.header("Authorization", "Bearer " + t.reveal()));
-    return b.build();
+  // ------------------------------------------------------------------------------- query
+
+  /**
+   * The SQL query client (also the {@link codes.grow.packages.betterstack.logging.LogQueryClient}).
+   *
+   * @return the query client
+   * @throws ConfigException without query credentials
+   */
+  public BetterStackQuery query() {
+    if (query == null) {
+      throw new ConfigException(
+          "query: queryUrl, queryUsername and queryPassword are required for SQL queries");
+    }
+    return query;
   }
+
+  // ------------------------------------------------------------------------------- close
 
   /**
    * Returns whether {@link #close()} was called.
@@ -193,25 +406,37 @@ public final class BetterStackClient implements AutoCloseable {
     return closed.get();
   }
 
-  /** Stops registered resources and the transport. Idempotent. */
+  /**
+   * Flushes and closes every log client, stops tails, then releases both transports. Idempotent;
+   * later calls raise {@link CancelledException}.
+   */
   @Override
   public void close() {
-    if (!closed.compareAndSet(false, true)) {
-      return;
-    }
     List<AutoCloseable> copy;
     synchronized (resources) {
+      if (!closed.compareAndSet(false, true)) {
+        return;
+      }
       copy = new ArrayList<>(resources);
       resources.clear();
     }
     for (AutoCloseable r : copy) {
-      try {
-        r.close();
-      } catch (Exception ignored) {
-        // best effort: close must not throw
-      }
+      closeQuietly(r);
     }
-    transport.close();
+    if (ingest != null) {
+      ingest.close();
+    }
+    if (queryTransport != null) {
+      queryTransport.close();
+    }
+  }
+
+  private static void closeQuietly(AutoCloseable r) {
+    try {
+      r.close();
+    } catch (Exception ignored) {
+      // best effort: close must not throw
+    }
   }
 
   @Override
@@ -237,9 +462,9 @@ public final class BetterStackClient implements AutoCloseable {
     }
 
     /**
-     * Sets the endpoint base URL.
+     * Sets the ingest base URL (the source's ingesting host).
      *
-     * @param url URL
+     * @param url host or URL
      * @return this builder
      */
     public Builder url(String url) {
@@ -248,24 +473,90 @@ public final class BetterStackClient implements AutoCloseable {
     }
 
     /**
-     * Sets the API token.
+     * Sets the source token.
      *
      * @param token token
      * @return this builder
      */
-    public Builder token(String token) {
-      config.token(token);
+    public Builder sourceToken(String token) {
+      config.sourceToken(token);
       return this;
     }
 
     /**
-     * Sets the API token.
+     * Sets the source token.
      *
      * @param token token
      * @return this builder
      */
-    public Builder token(Secret token) {
-      config.token(token);
+    public Builder sourceToken(Secret token) {
+      config.sourceToken(token);
+      return this;
+    }
+
+    /**
+     * Sets the SQL query base URL.
+     *
+     * @param url host or URL
+     * @return this builder
+     */
+    public Builder queryUrl(String url) {
+      config.queryUrl(url);
+      return this;
+    }
+
+    /**
+     * Sets the SQL connection username.
+     *
+     * @param username username
+     * @return this builder
+     */
+    public Builder queryUsername(String username) {
+      config.queryUsername(username);
+      return this;
+    }
+
+    /**
+     * Sets the SQL connection password.
+     *
+     * @param password password
+     * @return this builder
+     */
+    public Builder queryPassword(String password) {
+      config.queryPassword(password);
+      return this;
+    }
+
+    /**
+     * Sets the SQL connection password.
+     *
+     * @param password password
+     * @return this builder
+     */
+    public Builder queryPassword(Secret password) {
+      config.queryPassword(password);
+      return this;
+    }
+
+    /**
+     * Sets the default collection.
+     *
+     * @param sourceTable identifier
+     * @return this builder
+     */
+    public Builder sourceTable(String sourceTable) {
+      config.sourceTable(sourceTable);
+      return this;
+    }
+
+    /**
+     * Sets the ingest body encoding.
+     *
+     * @param encoding encoding
+     * @return this builder
+     */
+    public Builder encoding(IngestEncoding encoding) {
+      config.encoding(encoding);
       return this;
     }
 
