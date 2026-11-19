@@ -1,8 +1,9 @@
-"""Hooks, logging, retries and timeouts. Hook data and log fields are always redacted."""
+"""Hooks, logging, retries, timeouts and a polling tail. Hook data and log fields are redacted."""
 
 from __future__ import annotations
 
 import logging
+import time
 
 import grow_better_stack_logs as sdk
 
@@ -22,10 +23,15 @@ def main() -> None:
         total_timeout=30.0,
         retry=sdk.RetryPolicy(max_retries=2, initial_backoff=0.2),
         user_agent_suffix="example/1.0",
+        encoding="ndjson",
     )
     print(config)  # credentials print as [REDACTED]
     with sdk.BetterStackClient(config) as client:
         print(client.health())
+        tail = client.query().tail("tail-example", lambda r: print("tail:", r.body))
+        client.exporter.send_events([{"message": "tail-example hello"}])
+        time.sleep(5)
+        tail.stop()
 
 
 if __name__ == "__main__":

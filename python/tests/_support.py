@@ -65,7 +65,8 @@ class MockServer:
                     ctype = "application/json"
                 try:
                     self.send_response(reply.status)
-                    self.send_header("Content-Type", ctype)
+                    if not any(k.lower() == "content-type" for k in reply.headers):
+                        self.send_header("Content-Type", ctype)
                     for k, v in reply.headers.items():
                         self.send_header(k, v)
                     self.send_header("Content-Length", str(len(payload)))
@@ -110,9 +111,50 @@ def fast_retry(**kw: Any) -> sdk.RetryPolicy:
     return sdk.RetryPolicy(**values)
 
 
-def make_config(url: str, **kw: Any) -> sdk.BetterStackConfig:
+#: Default URL of :class:`CoreConfig` (the generic config of the core transport tests).
+CORE_DEFAULT_URL = "http://127.0.0.1:8080"
+
+
+@dataclasses.dataclass(frozen=True, repr=False)
+class CoreConfig(sdk.BaseConfig):
+    """A generic single-endpoint config with a bearer ``token``: exercises the generated core
+    (transport, env, redaction) independently of the Better Stack two-host config."""
+
+    url: str = CORE_DEFAULT_URL
+    token: sdk.Secret | None = None
+
+    @classmethod
+    def _env_values(cls, reader: sdk.EnvReader) -> dict[str, Any]:
+        values = super()._env_values(reader)
+        token = reader.string("TOKEN", cls.ENV_VENDOR.get("TOKEN", ()))
+        if token is not None:
+            values["token"] = sdk.Secret(token)
+        return values
+
+    def validate(self) -> CoreConfig:
+        super().validate()
+        if self.token is not None and not self.token.reveal().strip():
+            raise sdk.ConfigError("config: token must not be blank")
+        return self
+
+
+def make_config(url: str, **kw: Any) -> CoreConfig:
     kw.setdefault("retry", fast_retry())
-    return sdk.BetterStackConfig(url=url, **kw)
+    return CoreConfig(url=url, **kw)
+
+
+def bs_config(
+    url: str | None = None, query_url: str | None = None, **kw: Any
+) -> sdk.BetterStackConfig:
+    """A Better Stack config for a mock server: ingest side when ``url`` is given (token
+    ``src-token-123``), query side when ``query_url`` is given (``user`` / ``query-pass-456``)."""
+    values: dict[str, Any] = {"retry": fast_retry()}
+    if url is not None:
+        values.update(url=url, source_token="src-token-123")
+    if query_url is not None:
+        values.update(query_url=query_url, query_username="user", query_password="query-pass-456")
+    values.update(kw)
+    return sdk.BetterStackConfig(**values)
 
 
 def closed_port_url() -> str:
@@ -138,3 +180,26 @@ def spawn_capturing(awaitable: Awaitable[Any], sink: list[BaseException]) -> asy
             raise
 
     return asyncio.ensure_future(run())
+
+
+FIXTURES = __import__("pathlib").Path(__file__).parent / "fixtures"
+
+
+def fixture(name: str) -> dict[str, Any]:
+    """A recorded exchange from tests/fixtures (recorded against the Better Stack stub)."""
+    data: dict[str, Any] = json.loads((FIXTURES / f"{name}.json").read_text(encoding="utf-8"))
+    return data
+
+
+def fixture_reply(name: str) -> Reply:
+    """The recorded response of a fixture as a :class:`Reply` (status, body, headers)."""
+    resp = fixture(name)["response"]
+    headers = {
+        k: v for k, v in resp["headers"].items() if k.lower() not in ("content-length", "date")
+    }
+    body = resp["body"]
+    if body is None:
+        body = b""
+    elif not isinstance(body, str):
+        body = json.dumps(body)
+    return Reply(resp["status"], body.encode() if isinstance(body, str) else body, headers)

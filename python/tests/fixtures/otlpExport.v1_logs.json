@@ -1,0 +1,23 @@
+{
+  "fixture": "otlpExport.v1_logs",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": "real ingesting host accepts OTLP/HTTP at /v1/logs; stub answers 404",
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/v1/logs",
+    "headers": {
+      "content-type": "application/x-protobuf",
+      "authorization": "<redacted>"
+    },
+    "body": null
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "9"
+    },
+    "body": "Not Found"
+  }
+}

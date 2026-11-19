@@ -1,0 +1,28 @@
+{
+  "fixture": "query.json_extract",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT JSONExtractString(raw, 'message') AS message, JSONExtractInt(raw, 'n') AS n FROM remote(t1_grow_sdk_logs) WHERE JSONExtractString(raw, 'message') = 'needle-prep-208cdca msgpack ts-ext' FORMAT JSONEachRow"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/x-ndjson; charset=UTF-8",
+      "content-length": "57",
+      "x-clickhouse-format": "JSONEachRow",
+      "x-clickhouse-summary": "{\"read_rows\": \"1\", \"result_rows\": \"1\"}"
+    },
+    "body": {
+      "message": "needle-prep-208cdca msgpack ts-ext",
+      "n": "7"
+    }
+  }
+}

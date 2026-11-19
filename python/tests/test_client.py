@@ -1,4 +1,4 @@
-"""Skeleton client (sync + async), health, close and polling helpers."""
+"""Better Stack clients (sync + async): health, ping, close, sides; polling helpers."""
 
 from __future__ import annotations
 
@@ -9,63 +9,79 @@ from typing import Any
 import pytest
 
 import grow_better_stack_logs as sdk
-from _support import MockServer, Reply, closed_port_url, make_config, spawn_capturing
+from _support import (
+    MockServer,
+    Reply,
+    bs_config,
+    closed_port_url,
+    fixture_reply,
+    make_config,
+    spawn_capturing,
+)
 
-TOKEN = "client-token-789"
+SRC = "src-token-123"
+PW = "query-pass-456"
 
 
-def client(url: str, **kw: Any) -> sdk.BetterStackClient:
-    return sdk.BetterStackClient(make_config(url, **kw))
+def client(
+    url: str | None = None, query_url: str | None = None, **kw: Any
+) -> sdk.BetterStackClient:
+    return sdk.BetterStackClient(bs_config(url, query_url, **kw))
 
 
-def aclient(url: str, **kw: Any) -> sdk.AsyncBetterStackClient:
-    return sdk.AsyncBetterStackClient(make_config(url, **kw))
+def aclient(
+    url: str | None = None, query_url: str | None = None, **kw: Any
+) -> sdk.AsyncBetterStackClient:
+    return sdk.AsyncBetterStackClient(bs_config(url, query_url, **kw))
 
 
 # --------------------------------------------------------------------------- sync
 
 
-def test_health_ping_version(server: MockServer) -> None:
-    server.enqueue("/health", Reply(200, {"status": "ok", "build": 7, "nested": {"x": 1}}))
-    server.enqueue("/version", Reply(200, {"version": "1.2.3"}))
-    with client(server.url, token=TOKEN) as c:
-        health = c.health()
-        assert health == sdk.HealthStatus(True, "ok", {"build": "7"})
-        latency = c.ping()
-        assert isinstance(latency, float) and latency >= 0
-        assert c.server_version() == "1.2.3"
-        assert "client-token" not in repr(c)
-    ping = next(s for s in server.seen if s.path == "/v1/ping")
-    assert ping.headers["Authorization"] == f"Bearer {TOKEN}"
-    health_req = next(s for s in server.seen if s.path == "/health")
-    assert "Authorization" not in health_req.headers
+def test_health_via_query_ping(server: MockServer) -> None:
+    server.enqueue("/ping", fixture_reply("health.query_ping"))
+    with client(server.url, server.url) as c:
+        assert c.health() == sdk.HealthStatus(True, "ok", {"endpoint": "query"})
+        assert SRC not in repr(c)
+        assert PW not in repr(c)
+    assert "Authorization" not in server.seen[0].headers
+    server.enqueue("/ping", Reply(503, "down"))
+    with client(query_url=server.url) as c:
+        assert c.health() == sdk.HealthStatus(
+            False, "unhealthy", {"endpoint": "query", "httpStatus": "503"}
+        )
+        server.enqueue("/ping", Reply(200, ""))
+        assert c.health().status == "ok"
 
 
-def test_health_variants(server: MockServer) -> None:
-    c = client(server.url)
-    server.enqueue("/health", Reply(503, {"status": "degraded"}))
-    assert c.health() == sdk.HealthStatus(False, "degraded", {"httpStatus": "503"})
-    server.enqueue("/health", Reply(500, "boom"))
-    assert c.health() == sdk.HealthStatus(False, "unhealthy", {"httpStatus": "500"})
-    server.enqueue("/health", Reply(200, "OK"))
-    assert c.health() == sdk.HealthStatus(True, "ok", {})
-    server.enqueue("/health", Reply(200, [1, 2]))
-    assert c.health().healthy
-    assert len([s for s in server.seen if s.path == "/health"]) == 4  # health never retries
+def test_health_of_ingest_only_client(server: MockServer) -> None:
+    server.enqueue("/", fixture_reply("health.ingest_get_root"))
+    with client(server.url) as c:
+        status = c.health()
+        assert status.healthy
+        assert status.details == {"endpoint": "ingest", "httpStatus": "405"}
+        server.enqueue("/", Reply(502, "bad gateway"))
+        assert c.health() == sdk.HealthStatus(
+            False, "unhealthy", {"endpoint": "ingest", "httpStatus": "502"}
+        )
+    assert server.seen[0].method == "GET"
+    assert "Authorization" not in server.seen[0].headers
+    assert len(server.seen) == 2  # health never retries
 
 
 def test_core_health_unreachable() -> None:
     """core.health.unreachable"""
-    c = client(closed_port_url())
-    status = c.health()
-    assert status.healthy is False
-    assert status.status == "unreachable"
-    assert "error" in status.details
+    for c in (client(closed_port_url()), client(query_url=closed_port_url())):
+        status = c.health()
+        assert status.healthy is False
+        assert status.status == "unreachable"
+        assert "error" in status.details
+        c.close()
 
 
 def test_health_timeout_is_unreachable(server: MockServer) -> None:
-    server.enqueue("/health", Reply(200, delay=1.0))
-    c = client(server.url, request_timeout=0.1)
+    server.enqueue("/ping", Reply(200, "Ok.", delay=1.0))
+    c = client(query_url=server.url, request_timeout=0.1)
     assert c.health().status == "unreachable"
 
 
@@ -77,32 +93,81 @@ def test_health_raises_only_cancelled_and_config(server: MockServer) -> None:
     token = sdk.CancelToken()
     token.cancel()
     with pytest.raises(sdk.CancelledError):
-        client(server.url).health(cancel=token)
-    bad = sdk.BetterStackClient.__new__(sdk.BetterStackClient)
-    bad.config = sdk.BetterStackConfig(url="ftp://svc")
-    bad._transport = sdk.HttpTransport(bad.config)
+        client(query_url=server.url).health(cancel=token)
+    server.enqueue("/", Reply(401, "no"))
+    status = client(server.url).health()  # any answer below 500 means reachable
+    assert status.healthy
+    bad = client(server.url)
+    bad._ingest = sdk.HttpTransport(make_config("ftp://svc"))
     with pytest.raises(sdk.ConfigError):
         bad.health()
+    server.enqueue("/ping", Reply(200, "Ok.", delay=0.5))
+    q = client(query_url=server.url, request_timeout=5)
+    q._sql = sdk.HttpTransport(make_config("ftp://svc"))
+    with pytest.raises(sdk.ConfigError):
+        q.health()
+
+
+def test_ping_with_query_credentials(server: MockServer) -> None:
+    server.enqueue("/", fixture_reply("ping.fallback_count"))
+    with client(query_url=server.url, source_table="t1_grow_sdk") as c:
+        assert c.ping() >= 0
+    seen = server.seen[0]
+    assert (
+        seen.body
+        == b"SELECT count() AS c FROM remote(t1_grow_sdk_logs) WHERE 1 = 0 FORMAT JSONEachRow"
+    )
+    assert seen.headers["Authorization"].startswith("Basic ")
+    server.enqueue("/", Reply(200, '{"ok":1}\n'))
+    with client(query_url=server.url) as c:
+        c.ping()
+    assert server.seen[1].body == b"SELECT 1 AS ok FORMAT JSONEachRow"
+
+
+def test_ping_ingest_only_posts_empty_batch(server: MockServer) -> None:
+    server.enqueue("/", Reply(202, b""))
+    with client(server.url) as c:
+        assert c.ping() >= 0
+    seen = server.seen[0]
+    assert (seen.method, seen.body) == ("POST", b"[]")
+    assert seen.headers["Authorization"] == f"Bearer {SRC}"
+    assert seen.headers["Content-Type"] == "application/json"
 
 
 def test_ping_bad_credentials(server: MockServer) -> None:
-    server.enqueue("/v1/ping", Reply(401, {"error": "unauthorized"}))
-    with pytest.raises(sdk.AuthenticationError):
+    server.enqueue("/", fixture_reply("send.403_bad_token"))
+    with pytest.raises(sdk.AuthenticationError) as info:
         client(server.url).ping()
+    assert info.value.http_status == 403
+    assert info.value.retryable is False
+    server.enqueue("/", fixture_reply("query.401_bad_password"))
+    with pytest.raises(sdk.AuthenticationError) as info2:
+        client(query_url=server.url).ping()
+    assert PW not in str(info2.value)
 
 
-def test_server_version_errors(server: MockServer) -> None:
-    c = client(server.url)
-    server.enqueue("/version", Reply(404))
-    with pytest.raises(sdk.UnsupportedError) as info:
-        c.server_version()
-    assert info.value.http_status == 404
-    server.enqueue("/version", Reply(200, {"nope": 1}))
-    with pytest.raises(sdk.ValidationError):
-        c.server_version()
-    server.enqueue("/version", Reply(403))
-    with pytest.raises(sdk.PermissionDeniedError):
-        c.server_version()
+def test_server_version_is_unsupported(server: MockServer) -> None:
+    with pytest.raises(sdk.UnsupportedError):
+        client(server.url).server_version()
+    assert server.seen == []
+
+
+def test_sides_require_their_credentials(server: MockServer) -> None:
+    ingest = client(server.url)
+    with pytest.raises(sdk.ConfigError, match="query_url"):
+        ingest.query()
+    query = client(query_url=server.url)
+    for fn in (
+        lambda: query.exporter,
+        lambda: query.otlp_exporter,
+        query.new_exporter,
+        query.new_otlp_exporter,
+        query.log_client,
+    ):
+        with pytest.raises(sdk.ConfigError, match="source_token"):
+            fn()
+    with pytest.raises(sdk.ConfigError):
+        ingest.log_client(protocol="grpc")  # type: ignore[arg-type]
 
 
 def test_core_close_idempotent(server: MockServer) -> None:
@@ -120,17 +185,37 @@ def test_core_close_idempotent(server: MockServer) -> None:
     assert stopped == [1]
     c.resources.register(Res())  # registering after close stops immediately
     assert stopped == [1, 1]
+    with pytest.raises(sdk.ConfigError, match="closed"):
+        c.log_client()
 
 
-def test_from_env_and_raw_request(server: MockServer, monkeypatch: pytest.MonkeyPatch) -> None:
-    env = {sdk.ENV_PREFIX + "URL": server.url, sdk.ENV_PREFIX + "TOKEN": TOKEN}
+def test_close_flushes_log_clients(server: MockServer) -> None:
+    server.defaults["/"] = Reply(202, b"")
+    c = client(server.url)
+    logs = c.log_client(options=sdk.BatchOptions(flush_interval_s=60, max_batch_bytes=1 << 30))
+    assert logs.processor.options.max_batch_bytes == sdk.MAX_REQUEST_BYTES
+    assert isinstance(logs.exporter, sdk.BetterStackLogExporter)
+    logs.logger().info("flushed on close")
+    with c:
+        pass
+    assert b"flushed on close" in __import__("gzip").decompress(server.seen[-1].body)
+    otlp = client(server.url).log_client(protocol="otlp")
+    assert isinstance(otlp.exporter, sdk.BetterStackOtlpLogExporter)
+
+
+def test_from_env(server: MockServer, monkeypatch: pytest.MonkeyPatch) -> None:
+    env = {
+        "BETTERSTACK_INGESTING_URL": server.url,
+        "BETTERSTACK_SOURCE_TOKEN": SRC,
+    }
     with sdk.BetterStackClient.from_env(env) as c:
         assert c.config.url == server.url
-        resp = c.request(sdk.Request("GET", "/anything"))
-        assert resp.status == 200
-    monkeypatch.setenv(sdk.ENV_PREFIX + "URL", server.url)
+        assert c.config.has_ingest and not c.config.has_query
+    monkeypatch.setenv(sdk.ENV_PREFIX + "QUERY_URL", server.url)
+    monkeypatch.setenv(sdk.ENV_PREFIX + "QUERY_USERNAME", "u")
+    monkeypatch.setenv(sdk.ENV_PREFIX + "QUERY_PASSWORD", PW)
     with sdk.BetterStackClient() as c2:
-        assert c2.config.url == server.url
+        assert c2.config.query_url == server.url
     with pytest.raises(sdk.ConfigError):
         sdk.BetterStackClient.from_env({sdk.ENV_PREFIX + "URL": "nope://x"})
 
@@ -139,44 +224,63 @@ def test_from_env_and_raw_request(server: MockServer, monkeypatch: pytest.Monkey
 
 
 async def test_async_client(server: MockServer, monkeypatch: pytest.MonkeyPatch) -> None:
-    server.enqueue("/health", Reply(200, {"status": "ok"}))
-    server.enqueue("/version", Reply(200, {"version": "9.9.9"}))
-    async with aclient(server.url, token=TOKEN) as c:
-        assert (await c.health()).healthy
+    server.enqueue("/ping", Reply(200, "Ok.\n"))
+    server.enqueue("/", Reply(200, '{"c":"0"}\n'))
+    async with aclient(server.url, server.url, source_table="t1") as c:
+        assert (await c.health()).details == {"endpoint": "query"}
         assert await c.ping() >= 0
-        assert await c.server_version() == "9.9.9"
-        assert (await c.request(sdk.Request("GET", "/raw"))).status == 200
-        assert "client-token" not in repr(c)
+        with pytest.raises(sdk.UnsupportedError):
+            await c.server_version()
+        assert SRC not in repr(c)
         assert c.resources is not None
     await c.close()
     with pytest.raises(sdk.CancelledError):
         await c.health()
-    env = {sdk.ENV_PREFIX + "URL": server.url}
-    c2 = sdk.AsyncBetterStackClient.from_env(env)
-    server.enqueue("/version", Reply(501))
-    with pytest.raises(sdk.UnsupportedError):
-        await c2.server_version()
-    server.enqueue("/version", Reply(404))
-    with pytest.raises(sdk.UnsupportedError):
-        await c2.server_version()
-    await c2.aclose()
+    with pytest.raises(sdk.ConfigError):
+        c.log_client()
+    server.enqueue("/", Reply(405, "Method Not Allowed"))
+    server.enqueue("/", Reply(202, b""))
+    async with aclient(server.url) as ingest:
+        status = await ingest.health()
+        assert status.details == {"endpoint": "ingest", "httpStatus": "405"}
+        assert await ingest.ping() >= 0
+        server.enqueue("/", Reply(500, "x"))
+        assert not (await ingest.health()).healthy
+        server.enqueue("/", fixture_reply("send.403_bad_token"))
+        with pytest.raises(sdk.AuthenticationError):
+            await ingest.ping()
+        with pytest.raises(sdk.ConfigError):
+            ingest.query()
+    query_only = aclient(query_url=server.url)
+    for fn in (
+        lambda: query_only.exporter,
+        lambda: query_only.otlp_exporter,
+        query_only.new_exporter,
+        query_only.new_otlp_exporter,
+    ):
+        with pytest.raises(sdk.ConfigError):
+            fn()
+    await query_only.aclose()
     monkeypatch.setenv(sdk.ENV_PREFIX + "URL", server.url)
+    monkeypatch.setenv(sdk.ENV_PREFIX + "SOURCE_TOKEN", SRC)
     c3 = sdk.AsyncBetterStackClient()
     assert c3.config.url == server.url
     await c3.aclose()
+    c4 = sdk.AsyncBetterStackClient.from_env({}, url=server.url, source_token=SRC)
+    await c4.aclose()
 
 
 async def test_async_health_unreachable() -> None:
     """core.health.unreachable (async)"""
-    c = aclient(closed_port_url())
-    status = await c.health()
-    assert (status.healthy, status.status) == (False, "unreachable")
-    await c.aclose()
+    for c in (aclient(closed_port_url()), aclient(query_url=closed_port_url())):
+        status = await c.health()
+        assert (status.healthy, status.status) == (False, "unreachable")
+        await c.aclose()
 
 
 async def test_async_health_cancel(server: MockServer) -> None:
-    server.enqueue("/health", Reply(200, delay=2.0))
-    c = aclient(server.url)
+    server.enqueue("/ping", Reply(200, "Ok.", delay=2.0))
+    c = aclient(query_url=server.url)
     errors: list[BaseException] = []
     task = spawn_capturing(c.health(), errors)
     await asyncio.sleep(0.1)
@@ -185,6 +289,24 @@ async def test_async_health_cancel(server: MockServer) -> None:
         await task
     assert isinstance(errors[0], sdk.CancelledError)
     await c.aclose()
+
+
+async def test_async_close_flushes_and_stops_tails(server: MockServer) -> None:
+    server.defaults["/"] = Reply(200, b"")
+    c = aclient(server.url, server.url, source_table="t1")
+    logs = c.log_client(options=sdk.BatchOptions(flush_interval_s=60))
+    assert isinstance(logs.exporter, sdk.AsyncBetterStackLogExporter)
+    otlp = c.log_client(protocol="otlp")
+    assert isinstance(otlp.exporter, sdk.AsyncBetterStackOtlpLogExporter)
+    logs.logger().info("async flushed on close")
+    tail = await c.query().tail("x", lambda r: None, interval_s=0.05)
+    await c.aclose()
+    assert tail._task.done()
+    bodies = [s.body for s in server.seen if s.method == "POST"]
+    assert any(
+        b.startswith(b"\x1f\x8b") and b"async flushed" in __import__("gzip").decompress(b)
+        for b in bodies
+    )
 
 
 # --------------------------------------------------------------------------- polling

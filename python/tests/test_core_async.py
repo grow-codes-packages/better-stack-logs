@@ -238,6 +238,6 @@ async def test_core_useragent_and_hooks_async(server: MockServer) -> None:
 
 
 async def test_invalid_url_async() -> None:
-    t = sdk.AsyncHttpTransport(sdk.BetterStackConfig(url="ftp://svc"))
+    t = sdk.AsyncHttpTransport(make_config("ftp://svc"))
     with pytest.raises(sdk.ConfigError):
         await t.request(get())
