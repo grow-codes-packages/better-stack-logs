@@ -542,7 +542,7 @@ def test_tls_settings(tmp_path: Any) -> None:
 
 
 def test_invalid_url_maps_to_config_error() -> None:
-    t = sdk.HttpTransport(sdk.BetterStackConfig(url="ftp://svc"))
+    t = sdk.HttpTransport(make_config("ftp://svc"))
     with pytest.raises(sdk.ConfigError):
         t.request(get())
 

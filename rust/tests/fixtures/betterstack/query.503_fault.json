@@ -1,0 +1,23 @@
+{
+  "fixture": "query.503_fault",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": "injected with POST /__stub/fault",
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT 1"
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "19"
+    },
+    "body": "Service Unavailable"
+  }
+}

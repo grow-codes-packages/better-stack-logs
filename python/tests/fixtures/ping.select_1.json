@@ -1,0 +1,24 @@
+{
+  "fixture": "ping.select_1",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": "ClickHouse answers {\"1\":1}; stub needs FROM -> mismatch",
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT 1 FORMAT JSONEachRow"
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "109",
+      "x-clickhouse-exception-code": "62"
+    },
+    "body": "Code: 62. DB::Exception: Syntax error at position 9 ('FORMAT'): expected FROM. (SYNTAX_ERROR) (version stub)\n"
+  }
+}

@@ -10,69 +10,95 @@ import codes.grow.packages.betterstack.core.EnvReader;
 import codes.grow.packages.betterstack.core.HealthStatus;
 import codes.grow.packages.betterstack.core.Hooks;
 import codes.grow.packages.betterstack.core.Logger;
-import codes.grow.packages.betterstack.core.MockServer;
 import codes.grow.packages.betterstack.core.RetryPolicy;
-import codes.grow.packages.betterstack.core.Secret;
 import codes.grow.packages.betterstack.core.TlsOptions;
 import codes.grow.packages.betterstack.core.UnsupportedException;
+import codes.grow.packages.betterstack.core.ValidationException;
+import codes.grow.packages.betterstack.logging.BatchOptions;
+import codes.grow.packages.betterstack.logging.BatchingLogClient;
+import codes.grow.packages.betterstack.logging.LogInput;
 import java.net.ServerSocket;
 import java.time.Duration;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class BetterStackClientTest {
-  private static final String P = EnvReader.DEFAULT_PREFIX;
-
-  private MockServer server;
+  private FakeServer ingestServer;
+  private FakeServer queryServer;
 
   @BeforeEach
-  void start() throws Exception {
-    server = MockServer.start();
+  void start() {
+    ingestServer = FakeServer.start();
+    queryServer = FakeServer.start();
   }
 
   @AfterEach
   void stop() {
-    server.close();
+    ingestServer.close();
+    queryServer.close();
   }
 
-  private static BetterStackConfig.Builder cfg() {
-    return BetterStackConfig.builder();
-  }
-
-  private BetterStackClient client() {
+  private BetterStackClient.Builder both() {
     return BetterStackClient.builder()
-        .url(server.url())
-        .token("tok-123456")
-        .retry(RetryPolicy.builder().initialBackoff(Duration.ofMillis(1)).build())
+        .url(ingestServer.url())
+        .sourceToken("src-token-123")
+        .queryUrl(queryServer.url())
+        .queryUsername("user")
+        .queryPassword("query-pass-456")
+        .sourceTable("t1_app")
+        .retry(RetryPolicy.builder().initialBackoff(Duration.ofMillis(1)).build());
+  }
+
+  private BetterStackClient ingestOnly() {
+    return BetterStackClient.builder()
+        .url(ingestServer.url())
+        .sourceToken("src-token-123")
+        .retry(RetryPolicy.builder().maxRetries(0).build())
         .build();
   }
 
   @Test
-  void healthVariants() {
-    server
-        .enqueue(200, "{\"status\":\"ok\",\"version\":\"1.0\",\"nested\":{}}")
-        .enqueue(200, "{\"status\":\"degraded\"}")
-        .enqueue(503, "{\"status\":\"sealed\"}")
-        .enqueue(500, "oops")
-        .enqueue(200, "[1]")
-        .enqueue(200, "{\"status\":5}");
-    try (var c = client()) {
+  void healthViaQueryPing() {
+    queryServer
+        .enqueueFixture("health.query_ping")
+        .enqueue(503, "down", "text/plain")
+        .enqueue(200, "", null);
+    try (var c = both().build()) {
       HealthStatus h = c.health();
-      assertThat(h).isEqualTo(new HealthStatus(true, "ok", Map.of("version", "1.0")));
-      assertThat(c.health().status()).isEqualTo("degraded");
-      HealthStatus sealed = c.health();
-      assertThat(sealed.healthy()).isFalse();
-      assertThat(sealed.status()).isEqualTo("sealed");
-      assertThat(sealed.details()).containsEntry("httpStatus", "503");
-      assertThat(c.health().status()).isEqualTo("unhealthy");
+      assertThat(h.healthy()).isTrue();
+      assertThat(h.status()).isEqualTo("ok");
+      assertThat(h.details()).containsEntry("endpoint", "query");
+      assertThat(queryServer.last().path()).isEqualTo("/ping");
+      assertThat(queryServer.last().header("Authorization")).isNull();
+      HealthStatus down = c.healthAsync().join();
+      assertThat(down.healthy()).isFalse();
+      assertThat(down.status()).isEqualTo("unhealthy");
+      assertThat(down.details()).containsEntry("httpStatus", "503");
       assertThat(c.health().status()).isEqualTo("ok");
-      assertThat(c.healthAsync().join().details()).containsEntry("status", "5");
-      assertThat(server.requests()).hasSize(6);
-      assertThat(server.requests().get(0).uri()).isEqualTo("/health");
+      assertThat(ingestServer.requests()).isEmpty();
+    }
+  }
+
+  @Test
+  void healthIngestOnly() {
+    ingestServer.enqueueFixture("health.ingest_get_root").enqueue(502, "bad", "text/plain");
+    try (var c = ingestOnly()) {
+      HealthStatus h = c.health();
+      assertThat(h.healthy()).isTrue();
+      assertThat(h.details())
+          .containsEntry("endpoint", "ingest")
+          .containsEntry("httpStatus", "405");
+      assertThat(ingestServer.last().method()).isEqualTo("GET");
+      assertThat(ingestServer.last().header("Authorization")).isNull();
+      HealthStatus bad = c.health();
+      assertThat(bad.healthy()).isFalse();
+      assertThat(bad.status()).isEqualTo("unhealthy");
     }
   }
 
@@ -82,70 +108,144 @@ class BetterStackClientTest {
     try (ServerSocket s = new ServerSocket(0)) {
       port = s.getLocalPort();
     }
-    String url = "http://127.0.0.1:" + port;
-    try (var c = BetterStackClient.builder().url(url).build()) {
+    try (var c =
+        BetterStackClient.builder()
+            .url("http://127.0.0.1:" + port)
+            .sourceToken("t")
+            .connectTimeout(Duration.ofSeconds(2))
+            .build()) {
       HealthStatus h = c.health();
       assertThat(h.healthy()).isFalse();
       assertThat(h.status()).isEqualTo("unreachable");
-      assertThat(c.healthAsync().join().status()).isEqualTo("unreachable");
+      assertThat(h.details()).containsKey("error").containsEntry("endpoint", "ingest");
     }
   }
 
   @Test
-  void healthThrowsOnlyForCancel() {
-    BetterStackClient c = client();
-    c.close();
-    assertThatThrownBy(c::health).isInstanceOf(CancelledException.class);
-    assertThatThrownBy(() -> c.healthAsync().join()).hasCauseInstanceOf(CancelledException.class);
+  void pingWithQueryCredentials() {
+    queryServer
+        .enqueueFixture("ping.fallback_count")
+        .enqueue(200, "{\"ok\":1}\n", "application/x-ndjson");
+    try (var c = both().build()) {
+      assertThat(c.ping()).isPositive();
+      FakeServer.Req r = queryServer.last();
+      assertThat(r.method()).isEqualTo("POST");
+      assertThat(r.text())
+          .isEqualTo("SELECT count() AS c FROM remote(t1_app_logs) WHERE 1 = 0 FORMAT JSONEachRow");
+      assertThat(r.header("Authorization")).startsWith("Basic ");
+      assertThat(r.header("Authorization")).doesNotContain("src-token-123");
+    }
+    try (var c = both().sourceTable(null).build()) {
+      assertThat(c.pingAsync().join()).isPositive();
+      assertThat(queryServer.last().text()).isEqualTo("SELECT 1 AS ok FORMAT JSONEachRow");
+    }
   }
 
   @Test
-  void pingSendsBearerToken() {
-    server
-        .enqueue(200, "{}")
-        .enqueue(401, "{\"message\":\"bad token tok-123456\"}")
-        .enqueue(200, "{}");
-    try (var c = client()) {
-      assertThat(c.ping()).isPositive();
-      assertThat(server.requests().get(0).header("Authorization")).isEqualTo("Bearer tok-123456");
-      assertThat(server.requests().get(0).uri()).isEqualTo("/v1/ping");
+  void pingBadQueryPassword() {
+    queryServer.enqueueFixture("query.401_bad_password");
+    try (var c = both().build()) {
       assertThatThrownBy(c::ping)
           .isInstanceOf(AuthenticationException.class)
-          .message()
-          .doesNotContain("tok-123456");
-      assertThat(c.pingAsync().join()).isPositive();
+          .hasMessageNotContaining("query-pass-456");
     }
   }
 
   @Test
-  void pingWithoutToken() {
-    server.enqueue(200, "{}");
-    try (var c = BetterStackClient.builder().url(server.url()).build()) {
-      c.ping();
-      assertThat(server.requests().get(0).header("Authorization")).isNull();
+  void pingIngestOnlyPostsEmptyBatch() {
+    ingestServer.enqueue(202, "", null).enqueueFixture("send.403_bad_token");
+    try (var c = ingestOnly()) {
+      assertThat(c.ping()).isPositive();
+      FakeServer.Req r = ingestServer.last();
+      assertThat(r.text()).isEqualTo("[]");
+      assertThat(r.header("Authorization")).isEqualTo("Bearer src-token-123");
+      assertThat(r.header("Content-Encoding")).isNull();
+      assertThatThrownBy(c::ping)
+          .isInstanceOf(AuthenticationException.class)
+          .hasMessageNotContaining("src-token-123");
     }
   }
 
   @Test
-  void serverVersion() {
-    server
-        .enqueue(200, "{\"version\":\"1.2.3\"}")
-        .enqueue(404, "")
-        .enqueue(200, "{\"other\":1}")
-        .enqueue(200, "{\"version\":\"2.0.0\"}");
-    try (var c = client()) {
-      assertThat(c.serverVersion()).isEqualTo("1.2.3");
+  void serverVersionUnsupported() {
+    try (var c = both().build()) {
       assertThatThrownBy(c::serverVersion).isInstanceOf(UnsupportedException.class);
-      assertThatThrownBy(c::serverVersion).isInstanceOf(UnsupportedException.class);
-      assertThat(c.serverVersionAsync().join()).isEqualTo("2.0.0");
+      assertThatThrownBy(() -> c.serverVersionAsync().join())
+          .isInstanceOf(CompletionException.class)
+          .hasCauseInstanceOf(UnsupportedException.class);
     }
   }
 
   @Test
-  void core_close_idempotent() throws Exception {
-    AtomicInteger closed = new AtomicInteger();
-    BetterStackClient c = client();
-    c.register(closed::incrementAndGet);
+  void sidesAreRequired() {
+    try (var c = ingestOnly()) {
+      assertThatThrownBy(c::query).isInstanceOf(ConfigException.class);
+      assertThat(c.exporter()).isNotNull();
+      assertThat(c.otlpExporter()).isNotNull();
+      assertThat(
+              c.newOtlpExporter(BetterStackOtlpLogExporterOptions.of(OtlpProtocol.JSON)).protocol())
+          .isEqualTo(OtlpProtocol.JSON);
+      assertThatThrownBy(
+              () -> c.newExporter(BetterStackLogExporterOptions.defaults().withMaxRequestBytes(-1)))
+          .isInstanceOf(ValidationException.class);
+    }
+    try (var c =
+        BetterStackClient.builder()
+            .queryUrl(queryServer.url())
+            .queryUsername("u")
+            .queryPassword("p")
+            .build()) {
+      assertThat(c.query()).isNotNull();
+      assertThatThrownBy(c::exporter).isInstanceOf(ConfigException.class);
+      assertThatThrownBy(c::otlpExporter).isInstanceOf(ConfigException.class);
+      assertThatThrownBy(c::logClient).isInstanceOf(ConfigException.class);
+      assertThatThrownBy(() -> c.newExporter(BetterStackLogExporterOptions.defaults()))
+          .isInstanceOf(ConfigException.class);
+      assertThatThrownBy(() -> c.newOtlpExporter(BetterStackOtlpLogExporterOptions.defaults()))
+          .isInstanceOf(ConfigException.class);
+    }
+  }
+
+  @Test
+  void logClientsAreFlushedOnClose() {
+    BetterStackClient c = both().build();
+    BatchingLogClient http =
+        c.logClient(
+            BetterStackLogClientOptions.builder()
+                .batchOptions(BatchOptions.builder().maxBatchBytes(64 * 1024 * 1024).build())
+                .resource(Map.of("service.name", "svc"))
+                .build());
+    assertThat(http.processor()).isNotNull();
+    BatchingLogClient otlp =
+        c.logClient(
+            BetterStackLogClientOptions.builder()
+                .protocol(LogProtocol.OTLP)
+                .otlp(BetterStackOtlpLogExporterOptions.defaults())
+                .exporter(BetterStackLogExporterOptions.of(IngestEncoding.NDJSON))
+                .redaction(null)
+                .build());
+    ingestServer.fallback(
+        (ex, r) -> FakeServer.send(ex, r.path().equals("/") ? 202 : 200, "", null));
+    http.send(LogInput.of("one"));
+    otlp.send(LogInput.of("two"));
+    c.close();
+    c.close();
+    assertThat(c.isClosed()).isTrue();
+    assertThat(ingestServer.requests())
+        .extracting(FakeServer.Req::path)
+        .containsExactlyInAnyOrder("/", "/v1/logs");
+    assertThatThrownBy(c::logClient).isInstanceOf(CancelledException.class);
+    assertThatThrownBy(c::ping).isInstanceOf(CancelledException.class);
+    assertThatThrownBy(c::health).isInstanceOf(CancelledException.class);
+    AtomicInteger closedCount = new AtomicInteger();
+    assertThatThrownBy(() -> c.register(closedCount::incrementAndGet))
+        .isInstanceOf(CancelledException.class);
+    assertThat(closedCount).hasValue(1);
+  }
+
+  @Test
+  void core_close_idempotent() {
+    BetterStackClient c = both().build();
     c.register(
         () -> {
           throw new IllegalStateException("ignored");
@@ -153,160 +253,89 @@ class BetterStackClientTest {
     c.close();
     c.close();
     assertThat(c.isClosed()).isTrue();
-    assertThat(closed).hasValue(1);
-    assertThat(c.transport().isClosed()).isTrue();
-    assertThatThrownBy(c::ping).isInstanceOf(CancelledException.class);
+    assertThat(c.toString()).contains("BetterStackClient").doesNotContain("query-pass-456");
   }
 
   @Test
-  void builderSetsEveryField() {
-    Hooks hooks = new Hooks() {};
-    Logger logger = new Logger() {};
+  void core_useragent_and_hooks() {
+    List<String> events = new CopyOnWriteArrayList<>();
+    Hooks hooks =
+        new Hooks() {
+          @Override
+          public void onRequest(RequestInfo info) {
+            events.add("req " + info.headers());
+          }
+        };
+    queryServer.enqueue(200, "", "application/x-ndjson");
+    try (var c =
+        both()
+            .userAgentSuffix("suite/1")
+            .header("X-Extra", "1")
+            .hooks(hooks)
+            .logger(new Logger() {})
+            .connectTimeout(Duration.ofSeconds(5))
+            .requestTimeout(Duration.ofSeconds(5))
+            .totalTimeout(Duration.ofSeconds(10))
+            .tls(TlsOptions.defaults())
+            .encoding(IngestEncoding.NDJSON)
+            .proxy(null)
+            .build()) {
+      c.ping();
+      assertThat(queryServer.last().header("User-Agent"))
+          .startsWith("grow-codes-better-stack-logs/")
+          .contains("(java)")
+          .contains("suite/1");
+      assertThat(queryServer.last().header("X-Extra")).isEqualTo("1");
+      assertThat(events).hasSize(1);
+      assertThat(events.get(0)).doesNotContain("query-pass-456");
+      assertThat(c.config().encoding()).isEqualTo(IngestEncoding.NDJSON);
+    }
+  }
+
+  @Test
+  void builderFromEnvAndCreate() {
+    Map<String, String> env =
+        Map.of(
+            EnvReader.DEFAULT_PREFIX + "URL",
+            ingestServer.url(),
+            "BETTERSTACK_SOURCE_TOKEN",
+            "t",
+            "BETTERSTACK_QUERY_URL",
+            queryServer.url(),
+            "BETTERSTACK_QUERY_USERNAME",
+            "u",
+            "BETTERSTACK_QUERY_PASSWORD",
+            "p");
     try (var c =
         BetterStackClient.builder()
-            .url(server.url())
-            .token(Secret.of("s3cr3t-value"))
-            .connectTimeout(Duration.ofSeconds(1))
-            .requestTimeout(Duration.ofSeconds(2))
-            .totalTimeout(Duration.ofSeconds(3))
-            .retry(RetryPolicy.none())
-            .tls(TlsOptions.defaults())
-            .proxy("http://proxy.invalid:3128")
-            .header("X-A", "1")
-            .userAgentSuffix("app/1")
-            .hooks(hooks)
-            .logger(logger)
-            .build()) {
-      BetterStackConfig cfg = c.config();
-      assertThat(cfg.url()).isEqualTo(server.url());
-      assertThat(cfg.token()).isPresent();
-      assertThat(cfg.connectTimeout()).isEqualTo(Duration.ofSeconds(1));
-      assertThat(cfg.requestTimeout()).isEqualTo(Duration.ofSeconds(2));
-      assertThat(cfg.totalTimeout()).isEqualTo(Duration.ofSeconds(3));
-      assertThat(cfg.retry().maxRetries()).isZero();
-      assertThat(cfg.tls().isCustom()).isFalse();
-      assertThat(cfg.proxy()).contains("http://proxy.invalid:3128");
-      assertThat(cfg.headers()).containsEntry("X-A", "1");
-      assertThat(cfg.userAgentSuffix()).contains("app/1");
-      assertThat(cfg.hooks()).isSameAs(hooks);
-      assertThat(cfg.logger()).isSameAs(logger);
-      assertThat(c.toString()).doesNotContain("s3cr3t-value");
-      assertThat(c.transport().config().knownSecrets()).containsExactly("s3cr3t-value");
-      cfg.token().get().clear();
-      assertThat(c.transport().config().knownSecrets()).isEmpty();
-    }
-  }
-
-  @Test
-  void core_redaction_config() {
-    BetterStackConfig cfg =
-        cfg()
-            .url("http://user:pw@h:1")
-            .token("tok-very-secret")
-            .header("Authorization", "Bearer tok-very-secret")
-            .proxy("http://u:proxypass@p:3128")
-            .build();
-    assertThat(cfg.toString())
-        .doesNotContain("tok-very-secret")
-        .doesNotContain("proxypass")
-        .doesNotContain(":pw@")
-        .contains("token=[REDACTED]");
-    assertThat(cfg().build().toString()).contains("token=null").contains("proxy=null");
-  }
-
-  @Test
-  void core_config_env_precedence() {
-    Map<String, String> env = new HashMap<>();
-    env.put(P + "URL", "http://from-env:1");
-    env.put(P + "TOKEN", "env-token");
-    env.put(P + "CONNECT_TIMEOUT", "1500");
-    env.put(P + "REQUEST_TIMEOUT", "2s");
-    env.put(P + "TOTAL_TIMEOUT", "1m");
-    env.put(P + "MAX_RETRIES", "5");
-    env.put(P + "CA_CERT", "/tmp/ca.pem");
-    env.put(P + "CLIENT_CERT", "/tmp/c.pem");
-    env.put(P + "CLIENT_KEY", "/tmp/k.pem");
-    env.put(P + "INSECURE_SKIP_VERIFY", "on");
-    env.put(P + "PROXY", "http://proxy:1");
-    BetterStackConfig fromEnv = BetterStackConfig.fromEnv(env);
-    assertThat(fromEnv.url()).isEqualTo("http://from-env:1");
-    assertThat(fromEnv.token().map(Secret::reveal)).contains("env-token");
-    assertThat(fromEnv.connectTimeout()).isEqualTo(Duration.ofMillis(1500));
-    assertThat(fromEnv.requestTimeout()).isEqualTo(Duration.ofSeconds(2));
-    assertThat(fromEnv.totalTimeout()).isEqualTo(Duration.ofMinutes(1));
-    assertThat(fromEnv.retry().maxRetries()).isEqualTo(5);
-    assertThat(fromEnv.tls().insecureSkipVerify()).isTrue();
-    assertThat(fromEnv.tls().caCertPath()).isPresent();
-    assertThat(fromEnv.proxy()).contains("http://proxy:1");
-    // explicit values win over the environment
-    BetterStackConfig explicit =
-        cfg()
-            .url("http://explicit:2")
-            .token("explicit-token")
-            .connectTimeout(Duration.ofSeconds(9))
-            .requestTimeout(Duration.ofSeconds(9))
-            .totalTimeout(Duration.ofSeconds(9))
-            .retry(RetryPolicy.none())
-            .tls(TlsOptions.defaults())
-            .proxy("http://p2:1")
             .fromEnv(EnvReader.of(env))
-            .build();
-    assertThat(explicit.url()).isEqualTo("http://explicit:2");
-    assertThat(explicit.token().map(Secret::reveal)).contains("explicit-token");
-    assertThat(explicit.retry().maxRetries()).isZero();
-    assertThat(explicit.tls().insecureSkipVerify()).isFalse();
-    assertThat(explicit.proxy()).contains("http://p2:1");
-    // defaults when nothing is set
-    BetterStackConfig defaults = BetterStackConfig.fromEnv(Map.of());
-    assertThat(defaults.url()).isEqualTo(BetterStackConfig.DEFAULT_URL);
-    assertThat(defaults.token()).isEmpty();
-    assertThat(defaults.connectTimeout()).isEqualTo(Duration.ofSeconds(10));
-    assertThat(defaults.requestTimeout()).isEqualTo(Duration.ofSeconds(30));
-    assertThat(defaults.totalTimeout()).isEqualTo(Duration.ofSeconds(120));
-    assertThat(defaults.retry().maxRetries()).isEqualTo(3);
-    // invalid values name the variable, never the value
-    Map<String, String> badTimeout = Map.of(P + "TOTAL_TIMEOUT", "forever");
-    assertThatThrownBy(() -> BetterStackConfig.fromEnv(badTimeout))
-        .isInstanceOf(ConfigException.class)
-        .hasMessageContaining(P + "TOTAL_TIMEOUT")
-        .message()
-        .doesNotContain("forever");
-    Map<String, String> badRetries = Map.of(P + "MAX_RETRIES", "-1");
-    assertThatThrownBy(() -> BetterStackConfig.fromEnv(badRetries))
-        .isInstanceOf(ConfigException.class)
-        .hasMessageContaining(P + "MAX_RETRIES");
-    assertThat(BetterStackConfig.fromEnv()).isNotNull();
-  }
-
-  @Test
-  void validation() {
-    assertThatThrownBy(() -> cfg().url("ftp://x").build()).isInstanceOf(ConfigException.class);
-    assertThatThrownBy(() -> cfg().url("http://[").build()).isInstanceOf(ConfigException.class);
-    assertThatThrownBy(() -> cfg().url("mailto:x").build()).isInstanceOf(ConfigException.class);
-    assertThatThrownBy(() -> cfg().connectTimeout(Duration.ZERO).build())
-        .isInstanceOf(ConfigException.class);
-    assertThatThrownBy(() -> cfg().requestTimeout(Duration.ofSeconds(-1)).build())
-        .isInstanceOf(ConfigException.class);
-    assertThatThrownBy(() -> cfg().totalTimeout(Duration.ZERO).build())
-        .isInstanceOf(ConfigException.class);
-    assertThatThrownBy(() -> cfg().tls(TlsOptions.builder().clientCertPem("x").build()).build())
-        .isInstanceOf(ConfigException.class);
-    assertThatThrownBy(() -> cfg().proxy("relative").build()).isInstanceOf(ConfigException.class);
-    assertThatThrownBy(() -> cfg().proxy("http://[").build()).isInstanceOf(ConfigException.class);
-    assertThat(cfg().token((String) null).build().token()).isEmpty();
-  }
-
-  @Test
-  void createAndFromEnv() {
-    try (var c = BetterStackClient.create(cfg().url(server.url()).build())) {
-      assertThat(c.isClosed()).isFalse();
+            .sourceToken(codes.grow.packages.betterstack.core.Secret.of("explicit"))
+            .queryPassword(codes.grow.packages.betterstack.core.Secret.of("pw"))
+            .build()) {
+      assertThat(c.config().sourceToken().orElseThrow().reveal()).isEqualTo("explicit");
+      assertThat(c.config().hasQuery()).isTrue();
     }
-    try (var c = BetterStackClient.fromEnv()) {
-      assertThat(c.config()).isNotNull();
+    try (var c = BetterStackClient.create(BetterStackConfig.fromEnv(env))) {
+      assertThat(c.config().hasIngest()).isTrue();
     }
-    EnvReader env = EnvReader.of(Map.of(P + "URL", server.url()));
-    try (var c = BetterStackClient.builder().fromEnv(env).build()) {
-      assertThat(c.config().url()).isEqualTo(server.url());
+    if (System.getenv(EnvReader.DEFAULT_PREFIX + "URL") == null
+        && System.getenv("BETTERSTACK_INGESTING_URL") == null) {
+      assertThatThrownBy(BetterStackClient::fromEnv).isInstanceOf(ConfigException.class);
     }
+    assertThatThrownBy(
+            () ->
+                BetterStackClient.builder()
+                    .url(ingestServer.url())
+                    .sourceToken("t")
+                    .queryUrl(queryServer.url())
+                    .queryUsername("u")
+                    .queryPassword("p")
+                    .tls(
+                        TlsOptions.builder()
+                            .caCertPem(
+                                "-----BEGIN CERTIFICATE-----\nbad\n-----END CERTIFICATE-----")
+                            .build())
+                    .build())
+        .isInstanceOf(ConfigException.class);
   }
 }

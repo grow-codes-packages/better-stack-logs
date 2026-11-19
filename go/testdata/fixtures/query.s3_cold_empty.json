@@ -1,0 +1,24 @@
+{
+  "fixture": "query.s3_cold_empty",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT dt, raw FROM s3Cluster(primary, t1_grow_sdk_s3) WHERE _row_type = 1 FORMAT JSONEachRow"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-length": "0",
+      "x-clickhouse-format": "JSONEachRow",
+      "x-clickhouse-summary": "{\"read_rows\": \"0\", \"result_rows\": \"0\"}"
+    },
+    "body": null
+  }
+}

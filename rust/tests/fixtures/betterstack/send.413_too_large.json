@@ -1,0 +1,26 @@
+{
+  "fixture": "send.413_too_large",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": "stub answers 413 from Content-Length and closes before reading the body: clients see EPIPE/ECONNRESET while writing and must still read the response",
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/",
+    "headers": {
+      "content-type": "application/json",
+      "authorization": "<redacted>"
+    },
+    "body": {
+      "text_prefix": "[{\"message\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "bytes": 10485792
+    }
+  },
+  "response": {
+    "status": 413,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "26"
+    },
+    "body": "payload reached size limit"
+  }
+}

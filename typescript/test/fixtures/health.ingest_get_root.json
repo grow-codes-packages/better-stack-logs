@@ -1,0 +1,21 @@
+{
+  "fixture": "health.ingest_get_root",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "GET",
+    "host": "ingest",
+    "path": "/",
+    "headers": {},
+    "body": null
+  },
+  "response": {
+    "status": 405,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "18",
+      "allow": "POST"
+    },
+    "body": "Method Not Allowed"
+  }
+}

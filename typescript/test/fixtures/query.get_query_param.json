@@ -1,0 +1,27 @@
+{
+  "fixture": "query.get_query_param",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "GET",
+    "host": "query",
+    "path": "/?query=SELECT%20count%28%29%20AS%20c%20FROM%20remote%28t1_grow_sdk_logs%29%20FORMAT%20JSONEachRow",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/x-ndjson; charset=UTF-8",
+      "content-length": "11",
+      "x-clickhouse-format": "JSONEachRow",
+      "x-clickhouse-summary": "{\"read_rows\": \"1\", \"result_rows\": \"1\"}"
+    },
+    "body": {
+      "c": "11"
+    }
+  }
+}

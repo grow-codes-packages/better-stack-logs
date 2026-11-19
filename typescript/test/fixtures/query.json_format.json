@@ -1,0 +1,42 @@
+{
+  "fixture": "query.json_format",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT count() AS c FROM remote(t1_grow_sdk_logs) WHERE position(raw, 'needle-prep-208cdca') > 0 FORMAT JSON"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=UTF-8",
+      "content-length": "166",
+      "x-clickhouse-format": "JSON",
+      "x-clickhouse-summary": "{\"read_rows\": \"1\", \"result_rows\": \"1\"}"
+    },
+    "body": {
+      "meta": [
+        {
+          "name": "c",
+          "type": "UInt64"
+        }
+      ],
+      "data": [
+        {
+          "c": "11"
+        }
+      ],
+      "rows": 1,
+      "statistics": {
+        "elapsed": 0.0,
+        "rows_read": 1
+      }
+    }
+  }
+}

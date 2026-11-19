@@ -1,0 +1,22 @@
+{
+  "fixture": "sendBatch.ndjson",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/",
+    "headers": {
+      "content-type": "application/x-ndjson",
+      "authorization": "<redacted>"
+    },
+    "body": "{\"message\": \"needle-prep-208cdca ndjson 0\", \"dt\": 1700000100123}\n{\"message\": \"needle-prep-208cdca ndjson 1\", \"dt\": 1700000100124}\n"
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "content-length": "0"
+    },
+    "body": null
+  }
+}

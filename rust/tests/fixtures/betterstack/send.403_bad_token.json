@@ -1,0 +1,25 @@
+{
+  "fixture": "send.403_bad_token",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/",
+    "headers": {
+      "content-type": "application/json",
+      "authorization": "<redacted>"
+    },
+    "body": {
+      "message": "x"
+    }
+  },
+  "response": {
+    "status": 403,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "12"
+    },
+    "body": "Unauthorized"
+  }
+}

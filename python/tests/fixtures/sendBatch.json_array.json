@@ -1,0 +1,35 @@
+{
+  "fixture": "sendBatch.json_array",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/",
+    "headers": {
+      "content-type": "application/json",
+      "authorization": "<redacted>"
+    },
+    "body": [
+      {
+        "message": "needle-prep-208cdca json-array 0",
+        "dt": 1700000000
+      },
+      {
+        "message": "needle-prep-208cdca json-array 1",
+        "dt": 1700000001
+      },
+      {
+        "message": "needle-prep-208cdca json-array 2",
+        "dt": 1700000002
+      }
+    ]
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "content-length": "0"
+    },
+    "body": null
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "fixture": "ping.fallback_count",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT count() AS c FROM remote(t1_grow_sdk_logs) WHERE 1 = 0 FORMAT JSONEachRow"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/x-ndjson; charset=UTF-8",
+      "content-length": "10",
+      "x-clickhouse-format": "JSONEachRow",
+      "x-clickhouse-summary": "{\"read_rows\": \"1\", \"result_rows\": \"1\"}"
+    },
+    "body": {
+      "c": "0"
+    }
+  }
+}

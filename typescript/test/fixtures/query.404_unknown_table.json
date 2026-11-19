@@ -1,0 +1,24 @@
+{
+  "fixture": "query.404_unknown_table",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT dt, raw FROM remote(t1_does_not_exist_logs) FORMAT JSONEachRow"
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "101",
+      "x-clickhouse-exception-code": "60"
+    },
+    "body": "Code: 60. DB::Exception: Table t1_does_not_exist_logs does not exist. (UNKNOWN_TABLE) (version stub)\n"
+  }
+}

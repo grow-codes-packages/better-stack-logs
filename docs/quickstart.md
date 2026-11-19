@@ -1,25 +1,42 @@
 # Quickstart
 
-Connect to Better Stack Logs, check that it is healthy, make an authenticated call and close the client.
-The client reads `GROW_BETTER_STACK_LOGS_URL` and `GROW_BETTER_STACK_LOGS_TOKEN` (and the vendor variables
-listed in [Configuration](configuration.md)), or takes the values in code.
+Send a log line to Better Stack, read it back with the SQL API and close the client. You need a
+**source** (Better Stack → Sources: its ingesting host and source token) and, to read logs back, a
+**SQL connection** (Integrations → Connect remotely: host, username, password) plus the source's
+collection name (`t<team>_<table>`).
 
 ```sh
-export GROW_BETTER_STACK_LOGS_URL=http://127.0.0.1:8080
-export GROW_BETTER_STACK_LOGS_TOKEN=...   # never commit real tokens
+export BETTERSTACK_INGESTING_HOST=s1234.eu-nbg-2.betterstackdata.com
+export BETTERSTACK_SOURCE_TOKEN=...            # never commit real tokens
+export BETTERSTACK_QUERY_HOST=eu-nbg-2-connect.betterstackdata.com
+export BETTERSTACK_QUERY_USERNAME=... BETTERSTACK_QUERY_PASSWORD=...
+export BETTERSTACK_SOURCE_TABLE=t1234_myapp
 ```
+
+The `GROW_BETTER_STACK_LOGS_*` names work too and win over the vendor names
+([Configuration](configuration.md)). Logs usually appear in the SQL API within seconds; allow up to
+a minute.
+
 
 === "TypeScript"
 
     ```ts
-    import { BetterStackClient } from "@grow-codes/better-stack-logs";
+    import { BetterStackClient, BetterStackError } from "@grow-codes/better-stack-logs";
 
     const client = BetterStackClient.fromEnv();
     try {
-      const health = await client.health();
-      console.log("healthy:", health.healthy, health.status);
+      console.log(await client.health()); // never throws for an unreachable service
       console.log("ping:", await client.ping(), "ms");
-      console.log("server version:", await client.serverVersion());
+
+      const logs = client.logClient({ resource: { "service.name": "quickstart" } });
+      logs.logger("demo").info("hello from TypeScript", { answer: 42 });
+      await logs.flush();
+
+      const record = await client.query().waitForLog("hello from TypeScript", { timeoutMs: 60_000, intervalMs: 2_000 });
+      console.log(record.timestamp, record.severityText, record.body, record.attributes);
+    } catch (err) {
+      if (err instanceof BetterStackError) console.error(err.code, err.message);
+      else throw err;
     } finally {
       await client.close();
     }
@@ -28,15 +45,25 @@ export GROW_BETTER_STACK_LOGS_TOKEN=...   # never commit real tokens
 === "Rust"
 
     ```rust
-    use grow_better_stack_logs::BetterStackClient;
+    use std::time::Duration;
+    use grow_better_stack_logs::logging::{attrs, LogClient, LogQueryClient, WaitOptions};
+    use grow_better_stack_logs::{BetterStackClient, LogClientOptions};
 
     #[tokio::main]
     async fn main() -> grow_better_stack_logs::Result<()> {
         let client = BetterStackClient::from_env()?;
-        let health = client.health().await?;
-        println!("healthy: {} {}", health.healthy, health.status);
+        println!("{:?}", client.health().await?);
         println!("ping: {:?}", client.ping().await?);
-        println!("server version: {}", client.server_version().await?);
+
+        let logs = client.log_client(LogClientOptions::default().resource_attribute("service.name", "quickstart"))?;
+        logs.logger(Some("demo"), attrs! {}).info("hello from Rust", attrs! { "answer" => 42 });
+        logs.flush(None).await?;
+
+        let record = client
+            .query()?
+            .wait_for_log("hello from Rust", WaitOptions::default().timeout(Duration::from_secs(60)))
+            .await?;
+        println!("{:?} {} {}", record.timestamp, record.severity_text, record.body);
         client.close().await;
         Ok(())
     }
@@ -48,86 +75,98 @@ export GROW_BETTER_STACK_LOGS_TOKEN=...   # never commit real tokens
     package main
 
     import (
-        "context"
-        "fmt"
-        "log"
+    	"context"
+    	"fmt"
+    	"log"
+    	"time"
 
-        betterstack "github.com/grow-codes-packages/better-stack-logs/go"
+    	betterstack "github.com/grow-codes-packages/better-stack-logs/go"
     )
 
     func main() {
-        ctx := context.Background()
-        client, err := betterstack.NewClientFromEnv()
-        if err != nil {
-            log.Fatal(err)
-        }
-        defer client.Close()
+    	ctx := context.Background()
+    	client, err := betterstack.NewClientFromEnv()
+    	if err != nil {
+    		log.Fatal(err)
+    	}
+    	defer client.Close()
 
-        health, err := client.Health(ctx)
-        if err != nil {
-            log.Fatal(err)
-        }
-        fmt.Println("healthy:", health.Healthy, health.Status)
+    	hs, _ := client.Health(ctx)
+    	fmt.Println(hs.Status, hs.Healthy)
 
-        latency, err := client.Ping(ctx)
-        if err != nil {
-            log.Fatal(err)
-        }
-        fmt.Println("ping:", latency)
+    	logs, err := client.NewLogClient(betterstack.LogClientOptions{
+    		Resource: map[string]betterstack.AttrValue{"service.name": "quickstart"},
+    	})
+    	if err != nil {
+    		log.Fatal(err)
+    	}
+    	logs.Logger("demo", nil).Info(ctx, "hello from Go", "answer", 42)
+    	if err := logs.Flush(ctx); err != nil {
+    		log.Fatal(err)
+    	}
 
-        version, err := client.ServerVersion(ctx)
-        if err != nil {
-            log.Fatal(err)
-        }
-        fmt.Println("server version:", version)
+    	rec, err := client.Query().WaitForLog(ctx, "hello from Go",
+    		betterstack.WaitForLogOptions{Timeout: time.Minute, Interval: 2 * time.Second})
+    	if err != nil {
+    		log.Fatal(err)
+    	}
+    	fmt.Println(rec.Timestamp, rec.SeverityText, rec.Body)
     }
     ```
 
 === "Python"
 
     ```python
-    from grow_better_stack_logs import BetterStackClient
+    from grow_better_stack_logs import BetterStackClient, BetterStackError
 
-    with BetterStackClient.from_env() as client:
-        health = client.health()
-        print("healthy:", health.healthy, health.status)
-        print("ping:", client.ping(), "ms")
-        print("server version:", client.server_version())
-    ```
+    try:
+        with BetterStackClient.from_env() as client:
+            print(client.health())
+            print(f"ping: {client.ping():.1f} ms")
 
-    Async code uses `AsyncBetterStackClient` with the same methods:
+            logs = client.log_client(resource={"service.name": "quickstart"})
+            logs.logger("demo").info("hello from Python", {"answer": 42})
+            logs.flush(10)
 
-    ```python
-    import asyncio
-    from grow_better_stack_logs import AsyncBetterStackClient
-
-    async def main() -> None:
-        async with AsyncBetterStackClient.from_env() as client:
-            print(await client.health())
-
-    asyncio.run(main())
+            record = client.query().wait_for_log("hello from Python", timeout_s=60, interval_s=2)
+            print(record.timestamp, record.severity_text, record.body, record.attributes)
+    except BetterStackError as err:
+        print(err.code, err)
     ```
 
 === "Java"
 
     ```java
     import codes.grow.packages.betterstack.BetterStackClient;
-    import codes.grow.packages.betterstack.core.HealthStatus;
+    import codes.grow.packages.betterstack.BetterStackLogClientOptions;
+    import codes.grow.packages.betterstack.core.BetterStackException;
+    import codes.grow.packages.betterstack.logging.LogRecord;
+    import codes.grow.packages.betterstack.logging.WaitForLogOptions;
+    import java.time.Duration;
+    import java.util.Map;
 
     public final class Quickstart {
       public static void main(String[] args) {
         try (BetterStackClient client = BetterStackClient.fromEnv()) {
-          HealthStatus health = client.health();
-          System.out.println("healthy: " + health.healthy() + " " + health.status());
+          System.out.println(client.health());
           System.out.println("ping: " + client.ping().toMillis() + " ms");
-          System.out.println("server version: " + client.serverVersion());
+
+          var logs = client.logClient(
+              BetterStackLogClientOptions.builder().resource(Map.of("service.name", "quickstart")).build());
+          logs.logger("demo").info("hello from Java", Map.of("answer", 42));
+          logs.flush();
+
+          LogRecord record = client.query().waitForLog("hello from Java",
+              WaitForLogOptions.of(Duration.ofSeconds(60), Duration.ofSeconds(2)));
+          System.out.println(record.timestamp() + " " + record.severityText() + " " + record.body());
+        } catch (BetterStackException e) {
+          System.err.println(e.code() + " " + e.getMessage());
         }
       }
     }
     ```
 
-## Next steps
 
-- [Configuration](configuration.md): timeouts, retries, TLS, proxy, environment variables.
-- [Functions](functions.md): the Better Stack Logs API of this SDK.
-- [Error handling](errors.md): error codes and retries.
+Next: [Ingest](functions/ingest.md) for encodings and raw events, [SQL query](functions/query.md)
+for `query` and `searchLogs`, and [Logging](logging.md) for batching, redaction and framework
+adapters.

@@ -1,0 +1,24 @@
+{
+  "fixture": "query.404_unknown_column",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT nope FROM remote(t1_grow_sdk_logs) FORMAT JSONEachRow"
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "86",
+      "x-clickhouse-exception-code": "47"
+    },
+    "body": "Code: 47. DB::Exception: Missing columns: 'nope'. (UNKNOWN_IDENTIFIER) (version stub)\n"
+  }
+}
