@@ -31,3 +31,43 @@ pub fn load_bootstrap_env() {
 pub fn conformance_dir() -> PathBuf {
     sdk::testing::scenarios_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/.."))
 }
+
+/// A run id unique per test call (`rs-<pid>-<nanos>-<n>`).
+pub fn run_id() -> String {
+    use std::sync::atomic::{AtomicU32, Ordering};
+    static N: AtomicU32 = AtomicU32::new(0);
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.subsec_nanos())
+        .unwrap_or(0);
+    format!(
+        "rs-{}-{nanos:x}-{}",
+        std::process::id(),
+        N.fetch_add(1, Ordering::SeqCst)
+    )
+}
+
+/// Arms a stub fault (stub-only `/__stub/fault` control, not part of the real API). Returns
+/// `false` when no control URL is configured.
+pub async fn inject_fault(target: &str, status: u16, body: &str) -> bool {
+    let var = if target == "query" {
+        "BETTERSTACK_STUB_QUERY_CONTROL_URL"
+    } else {
+        "BETTERSTACK_STUB_INGEST_CONTROL_URL"
+    };
+    let Ok(url) = std::env::var(var) else {
+        return false;
+    };
+    let config = sdk::core::CommonConfig::builder()
+        .url(url.clone())
+        .build(&url)
+        .expect("control url");
+    let transport = sdk::core::HttpTransport::new(&config).expect("transport");
+    transport
+        .post("fault")
+        .json(&serde_json::json!({"status": status, "count": 1, "target": target, "body": body}))
+        .send()
+        .await
+        .expect("fault control");
+    true
+}

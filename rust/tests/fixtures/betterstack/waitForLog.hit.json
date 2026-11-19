@@ -1,0 +1,25 @@
+{
+  "fixture": "waitForLog.hit",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT dt, raw FROM (SELECT dt, raw FROM remote(t1_grow_sdk_logs) UNION ALL SELECT dt, raw FROM s3Cluster(primary, t1_grow_sdk_s3) WHERE _row_type = 1) WHERE dt BETWEEN toDateTime64('2020-01-01 00:00:00', 6) AND toDateTime64('2027-11-18 20:35:31', 6) AND position(raw, 'needle-prep-208cdca wait-for-log') > 0 ORDER BY dt DESC LIMIT 1 FORMAT JSONEachRow"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/x-ndjson"
+    },
+    "body": {
+      "dt": "2026-11-18 20:35:31.541060",
+      "raw": "{\"message\":\"needle-prep-208cdca wait-for-log\"}"
+    }
+  }
+}
