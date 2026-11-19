@@ -1,5 +1,5 @@
 {
-  "sdkKitVersion": "0.1.0",
+  "sdkKitVersion": "0.2.0",
   "key": "better-stack-logs",
   "categories": [
     "logging"
@@ -32,57 +32,62 @@
   "generatedFiles": [
     {
       "path": ".dockerignore",
-      "sha256": "31e05840ca1235a5e3b39d311ee323e57bb28fdefce97d08fceb7ffdc97318ec",
+      "sha256": "748fd3f5adbd8ca760b92639cea0d78fbd89bcbfd7b7b8ef304517c3691f1637",
       "generated": true
     },
     {
       "path": ".editorconfig",
-      "sha256": "6ff5b8311cfcac2aa9e612f269eff648fbd01580f8d91ca1db5ece645aaa538e",
+      "sha256": "64af94226e9e4629130487ca5b4a46c7fc3031c17e1ed500641566c688b9d30b",
       "generated": true
     },
     {
       "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
-      "sha256": "1556094524c910a791102748c4009caecf7f09a12afc282f4c1c3a78340b8b1b",
+      "sha256": "a6890040d7dc05410ef91a523827137e22e804e17791477ea8ee852db5c9990e",
       "generated": true
     },
     {
       "path": ".github/ISSUE_TEMPLATE/config.yml",
-      "sha256": "32d84aeb6621f45737215fb6dc25c45b92d39fa8eae4a4e3f87157e5040d5193",
+      "sha256": "ea32f2fecd9cae64520a9608e5e1281e929aa7dea386c540a4eb03e1cbb3a273",
       "generated": true
     },
     {
       "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
-      "sha256": "80764879694bfbdbc7c82a0e82ca3783b9aaa4a0efe07a1d18ad5a1cd94ac7a8",
+      "sha256": "7ded32773992d7f8e8a1b103b5f1c841ffe6317153d609000be39bc7539b13ac",
       "generated": true
     },
     {
       "path": ".github/PULL_REQUEST_TEMPLATE.md",
-      "sha256": "837ec56f1300806ba05b44dae648c213a8625fab50eb7c6182d2337dfadb2f6b",
+      "sha256": "920a0c344af11268178c6e2284d1f1b87e4d230c7e4fed67ec9ac20158228de4",
       "generated": true
     },
     {
       "path": ".github/dependabot.yml",
-      "sha256": "4e43efba6a51273b4f53b1d742b5f3aa5466188b81032223271e76fb55ef3064",
+      "sha256": "8721203988d2d332326acce1f4e4d0da07c7753ac20912de7d8daff4be3eadab",
+      "generated": true
+    },
+    {
+      "path": ".github/scripts/release-check.py",
+      "sha256": "395d582aa578540e3de6434633836fcf7be3e7f7c2bb539a9d2bd385260c9d19",
       "generated": true
     },
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "c92a7587047866a770d7c2f874606d0d51ed5f216fd63e69968d3d1f9e1e3deb",
+      "sha256": "ffa5c665ba7e73805e4f4c0c620537361cec9b7b11e6aa36e35b9541ae15e22e",
       "generated": true
     },
     {
       "path": ".github/workflows/docs.yml",
-      "sha256": "06e88a2329690beab7aa258ef702929df427f272f0b81ee04cb70e9f7150a2b5",
+      "sha256": "5c8a74e9806b2802da16169bfd532f598346ccc9bd0a762e4417760be3273fc3",
       "generated": true
     },
     {
       "path": ".github/workflows/release.yml",
-      "sha256": "2f9b6ce509d899641c300c6ec774dc520977bc72d3ce78c7bde2d7d8c5df97e1",
+      "sha256": "3ec2aab75c861055fd299648200fbe4b53b2e53eba1e55ce3cfc225b7c73d126",
       "generated": true
     },
     {
       "path": ".gitignore",
-      "sha256": "37d893bf5366e79798b62de4010b6ddd2147bd0936248e247355dc1ee521d67a",
+      "sha256": "8f2573335ada6425031d1d6598d090ec2fbffa3c3f22a82eb18a60fbe1697ad9",
       "generated": true
     },
     {
@@ -101,12 +106,12 @@
     },
     {
       "path": "CODE_OF_CONDUCT.md",
-      "sha256": "f395f78a160e38d408d8a58eb4ae7afab2dd6d5d72e6812bb7d6c0d69686b92b",
+      "sha256": "aa110336ee281fcc4d8e6713fedaeaee6e7f2f8ca6861e52d2cfcf40d882508e",
       "generated": true
     },
     {
       "path": "CONTRIBUTING.md",
-      "sha256": "e5bc86190e91c9bf449c835932a1bec02a7fc77a126a1e03b4a1a99e6a789db6",
+      "sha256": "f0256007c3d01db5306fd493881c3b47d1351c44582cbdfea81bb916e19f1a55",
       "generated": true
     },
     {
@@ -116,7 +121,7 @@
     },
     {
       "path": "Makefile",
-      "sha256": "9dd252ffd84a791384c362f7f1815b62e6fd2ef3dec0485bcf864704e245fa5f",
+      "sha256": "72500742a4efade7321a5feeb31d9a712ad12c63109b3b45559649c6ac125067",
       "generated": true
     },
     {
@@ -131,7 +136,7 @@
     },
     {
       "path": "SECURITY.md",
-      "sha256": "815d1ccb52f4f3f0c1cabb61a00ff7d2e6d0767ab528fd0fe598c6e420045ff1",
+      "sha256": "a1b961c4f439abac062c17a494155fe268ca5466b5d6f9a71796c6c52cc7540d",
       "generated": true
     },
     {
@@ -181,27 +186,27 @@
     },
     {
       "path": "docker/Dockerfile.go",
-      "sha256": "b6cd058b3be70f4dfa87163ee35ef316c0d23442ab1884d2812c1e840d73ace6",
+      "sha256": "09f08f7930186fd818d2f780d775c6d7bb53f559d1856141439b3ac683b00f3f",
       "generated": true
     },
     {
       "path": "docker/Dockerfile.java",
-      "sha256": "126a7a8a94f9f96e2ceaf4a7188617e4fb3d4075ad541f5138d54ba60dee8e67",
+      "sha256": "4e40af8028cf540940ea9a0fe9aeca6f68f042ebedd1fa66241f1181f7fe85a2",
       "generated": true
     },
     {
       "path": "docker/Dockerfile.python",
-      "sha256": "24ffb2be7eed6be9cbefb055ffe67165f147e5dfed863fd626e595d47b2991e5",
+      "sha256": "97cc1930dae44a8e7e1a27b1dfe6899cb16c82a702169eb3ea6aae390aa430cf",
       "generated": true
     },
     {
       "path": "docker/Dockerfile.rust",
-      "sha256": "f4b18e2a95aa979b52491f41ca6797b6aae1b7a3be6fc149c617c772b4daa886",
+      "sha256": "17e01a3799968b0e1ac66b827cef117a74d19000499632f667091f6edc937e6a",
       "generated": true
     },
     {
       "path": "docker/Dockerfile.typescript",
-      "sha256": "dbd558bdd5790f33d3af9372555007b12703502bea64c69346f741a0efddff73",
+      "sha256": "356481bb377c1208fb94fed827e05853bba7bb06bcc5984feefcc48eefe19774",
       "generated": true
     },
     {
@@ -216,7 +221,7 @@
     },
     {
       "path": "docker/bootstrap/lib.sh",
-      "sha256": "ef9a634fef57959faf4aa189c5c264f00e30ce911e2cd50234206cc819ca1909",
+      "sha256": "5c2407a76b333c5d8622bb19597271641057ed394c691de87f54af0b6cb8effb",
       "generated": true
     },
     {
@@ -226,52 +231,52 @@
     },
     {
       "path": "docker/compose.yml",
-      "sha256": "f60cb596754a748474c909794e0f48cbec299680c000473df3f54ae30302b47d",
+      "sha256": "6b40d4e7de3c9aadd8f367e8706be8f5cee4c7f2618c9ddaf570877a4e86100b",
       "generated": true
     },
     {
       "path": "docker/harness/compose-run.sh",
-      "sha256": "b90bc6be3181cee7e869bd06a3de32ece3d423fbeb46134d15acd2e98b9aae75",
+      "sha256": "644917e8124906198084b8efac618b412854b9a68a520e4db8d822374c7536a3",
       "generated": true
     },
     {
       "path": "docker/harness/wait-for-http.sh",
-      "sha256": "5387e6dedfed547b5287c5aa99db352882b9a449c1fc699ab45202ab4b0b4cfb",
+      "sha256": "b90134c2b2d556b4ea3e6dfe26e42778d48c06c0299275c844f5195cfe63d48c",
       "generated": true
     },
     {
       "path": "docker/harness/wait-for-tcp.sh",
-      "sha256": "a3df77444ca0987940b1fd055d477e0c3a5dfdf07739a729d913f2a789427c2a",
+      "sha256": "c73f73c8b4799ce71d10d42f7252d9ed3152778ea27cd0d476c5ea01a5c9e646",
       "generated": true
     },
     {
       "path": "docs/.overrides/.icons/grow/logo.svg",
-      "sha256": "00f50edb0ed5447303f6587370365553d62b193db07587c8468bbe762f50e69e",
+      "sha256": "f92b9ab3978b5a6a2c1dff733ca72de70737cabc6a30ee09e5d5bf94bfd87c68",
       "generated": true
     },
     {
       "path": "docs/.overrides/assets/favicon.svg",
-      "sha256": "6948bc6e2614467d1fcbde590e7a5b624f8cc0e2371021ae0cb79d864915d15a",
+      "sha256": "5e819b7d5f5302ada392dd5a531486658829a491979cd81236f4347063fdae98",
       "generated": true
     },
     {
       "path": "docs/.overrides/grow.css",
-      "sha256": "869d7dcf5bdb233de79e55f3c4cf224ed5b921b1dbb9a0dc776fac958c110623",
+      "sha256": "6691bd8c517025cc21b2d90d7f8711f6cce3a2510bc033ed872793415ee4687e",
       "generated": true
     },
     {
       "path": "docs/.overrides/main.html",
-      "sha256": "74cd6a18230be87edfb191299a5cfd24cf47ae69101454bb27da81877f4d31ca",
+      "sha256": "372015dbda6a93b55f7d5478d393227d960973dee9d258dc7b5b57407b29b0a9",
       "generated": true
     },
     {
       "path": "docs/.overrides/partials/copyright.html",
-      "sha256": "2eb4a3571d6423a294414b621a4c6869bf7773af1dcd11ea7becd66b6fb7ef87",
+      "sha256": "5f2ce22cdd2d3f9f89629bf4257d94ac8199a2a4b098969bff8f818aafd8b792",
       "generated": true
     },
     {
       "path": "docs/api.md",
-      "sha256": "6500831ead786ffceab14404325dccc43992a1148de789074efe0853a926dca7",
+      "sha256": "3bfa4a312ddf5483cf9ae6e01a08d13b2c9b943b46e2ecf9d96fc68a240ca9b1",
       "generated": true
     },
     {
@@ -291,12 +296,12 @@
     },
     {
       "path": "docs/docker-testing.md",
-      "sha256": "7711a5408ba342a3ce2272cb10362fccb4c571f465d3ed69db4b19eb6197f3eb",
+      "sha256": "8f24e6352cb197b0ab4a9f0b9ee68078ad6a22a5d6de7a81ce82fd4e758338cd",
       "generated": true
     },
     {
       "path": "docs/errors.md",
-      "sha256": "85986b0c93e8e5d8d9d61afb8ae07bd42ade8985f371bc63b72cf57525916161",
+      "sha256": "2ea6dc690540d3ef4dc2e118b04899db4ba996e817115355b012378b848f17b6",
       "generated": true
     },
     {
@@ -306,7 +311,7 @@
     },
     {
       "path": "docs/hooks.md",
-      "sha256": "fac259b52ccc2fe998b07f2408ef74170e245f88f8813d1406fc3183595b2643",
+      "sha256": "f051f79779bb176d2e9a238914f2127fb5401737d0116f0434bd392ec435d1fb",
       "generated": true
     },
     {
@@ -316,17 +321,17 @@
     },
     {
       "path": "docs/install.md",
-      "sha256": "e06d7b676b29787bf23a6066a38ca2df7b1cdbb0d655e705a3435fb4b5708cee",
+      "sha256": "ef1d477e459fab71d49f561f461d886b4f7fc96c53921bae1eff62876be3de30",
       "generated": true
     },
     {
       "path": "docs/license.md",
-      "sha256": "310a40c24c3c8c5e6b74f7e36662ba580afcf2b9f32f02091894fd63123e79d0",
+      "sha256": "22b55c6744f54c4e501d9484ca99c50cc0c03e4f637d60ffd916c913e1de4515",
       "generated": true
     },
     {
       "path": "docs/logging.md",
-      "sha256": "939f81786fcee247e071139247b603a1c6937a5d231e42cd206b0cdf554c5c1a",
+      "sha256": "b98fb41f0f582941f90627c6ace5dda0c1537cfb3ebf69d839d6f026581fec44",
       "generated": true
     },
     {
@@ -336,12 +341,12 @@
     },
     {
       "path": "docs/redaction.md",
-      "sha256": "e512116cb137bb694d0eb02ca5e5cc548efe7b91b22bee800e644787f870c7da",
+      "sha256": "31b3df0a0f0fd15f7288ddd17e85b371dc869a192f86d0a1edfc8041b87f93ad",
       "generated": true
     },
     {
       "path": "docs/requirements.txt",
-      "sha256": "8fbc4770eae893da1185935d1d88f048ea8db8059e43f59ebc01bda79cf32eb1",
+      "sha256": "63839447be5d6a92c2b67c5f56912765cd36d7588447c51a74ab685788cd4a78",
       "generated": true
     },
     {
@@ -446,7 +451,7 @@
     },
     {
       "path": "go/Makefile",
-      "sha256": "d2ba0749335e74677681cb49cbf76b200a144f4775547837fb62491e2a94d141",
+      "sha256": "e785ae025874a6113392a02c3771cb5bfeaef79f46c341eb2d7f9447c84bec89",
       "generated": true
     },
     {
@@ -466,72 +471,72 @@
     },
     {
       "path": "go/core_config.go",
-      "sha256": "de62317e77b7ec08432a898d472df366e00f3fb3990576e56a0e57e88edafe7d",
+      "sha256": "1d9f41b7f4d1fa8bb938792c73dd15b1f385e9b309bc4bd75447220792c5b4c6",
       "generated": true
     },
     {
       "path": "go/core_env.go",
-      "sha256": "fb52bcd30c41a8c3e85213a1f2f95b881a05c175a8f80c19b041b8a7c13ae3f7",
+      "sha256": "89ed9f027d8066cc62c4b8c8b7341d426714f6c8435a4f59c3fdb6853cd3af5e",
       "generated": true
     },
     {
       "path": "go/core_errors.go",
-      "sha256": "22fcfd7f7dcc6d067ca928863201f3b28dc875c85c25a287f8e249f8dd3917be",
+      "sha256": "e1c074de0bc539087078e8437b26eee946fbef4bba76ad18d3c9bf4e5d2b73c7",
       "generated": true
     },
     {
       "path": "go/core_health.go",
-      "sha256": "b95ffe2f1930551faf724da885c198888cba5e3bf642e5dcc6a93a4ab3a91208",
+      "sha256": "56578322653e4208199c3d9e2719f35a7d16eb5d034d97790122b7a2c0683acb",
       "generated": true
     },
     {
       "path": "go/core_hooks.go",
-      "sha256": "554239625d71045c1a8908f532fe572947ef39e6c7e43c201773b991054322d9",
+      "sha256": "bde85dcb0c2e1693a3cc8fcebc5fe1243b98c2a591dd04d2aaa0b6bfd26fd0ea",
       "generated": true
     },
     {
       "path": "go/core_poll.go",
-      "sha256": "09227085a160e03d84cfefb1bae97569be7fab3d2f3ebdbdc34e74943ee301d1",
+      "sha256": "46273177b3ba9755299384d227f2b24183465a1916aa22708625eb5153d8d956",
       "generated": true
     },
     {
       "path": "go/core_redact.go",
-      "sha256": "5d2a224f48a837b5cf160968e9aa871bcc2c591f3a2a158d4715e26faee4fa0d",
+      "sha256": "c1a212e13f3cbb6b0656034966608fca3b5ad24428b28ce8338b6f3a9f8f66e5",
       "generated": true
     },
     {
       "path": "go/core_retry.go",
-      "sha256": "48388c6b17e97dfe567fd12e8adee4d1ff6b30462228b71da34e96157c007481",
+      "sha256": "6aaaea364e89772b43bac7ef6c609e59a64768989ff2110a83fc4c83994cca95",
       "generated": true
     },
     {
       "path": "go/core_secret.go",
-      "sha256": "d6b3e98bf24c4c69fec8f70e319921b45ba9136ea06ea6dd622675b4d7b286fd",
+      "sha256": "a101e8530ac6e7c007209418794ab18f7845603d8b26e26bd2c9d69806700c77",
       "generated": true
     },
     {
       "path": "go/core_testutil_test.go",
-      "sha256": "9e18d280ee6d8bb51b5f4cecb135718204f5bd733c3c6f2ad50d6909bc43489d",
+      "sha256": "1f5e5a3c5bfa367b9dff626675eaef595ed7f493a9ee83b3503109c1d2328fc7",
       "generated": true
     },
     {
       "path": "go/core_tls_test.go",
-      "sha256": "db2716d7e9123f2fc49464f28ca05a68593c12ce88f84ebe53c426cddd3cd9b4",
+      "sha256": "bdb6125a0167641fe0ff28b703b04eba3484189edf2f5e2147de98eecc4c9f23",
       "generated": true
     },
     {
       "path": "go/core_transport.go",
-      "sha256": "41a45a65e54819f016e9a1d322acbb6a19939ae83a16de818e849a65c5eb3693",
+      "sha256": "534ededba36458e101e5e2dffdd4d93bb4eda245d7fa403a5a585de2894cf2a5",
       "generated": true
     },
     {
       "path": "go/core_transport_test.go",
-      "sha256": "4d89d0faefb362bc7d5cd73d7fcb79a127eecf9004afbf5009cc239a1b719295",
+      "sha256": "82089ec455c716d4e2113d7d81621318bcb231fbdeb0fd4a8972f1c8e0852c38",
       "generated": true
     },
     {
       "path": "go/core_units_test.go",
-      "sha256": "6779f744cb34d642ff389482354cbe7d9f823107a7365f73d03fefd60d33c4b7",
+      "sha256": "0d2ac1c19f611eb845d65c1578ce5ea33517dafceb3709b24c3546c5e1ca7faa",
       "generated": true
     },
     {
@@ -546,7 +551,7 @@
     },
     {
       "path": "go/integration/conformance_test.go",
-      "sha256": "620e573d5e9fe5a58ba5656fae53db10f3a86fb1d928c1ed02549541e3162ed5",
+      "sha256": "ab9f7612eec338451b7f8af3dbcfc19941981ccf22291601b295a9ac6d9789b8",
       "generated": true
     },
     {
@@ -561,102 +566,102 @@
     },
     {
       "path": "go/internal/tools/covergate/main.go",
-      "sha256": "88c6121c53672eed1075f0c9f2e546f1bd4f260abcff8b31fc8a5682f30aa838",
+      "sha256": "f86e9f3df5f9dff6e5993dcd08f507b066ef0e99ea45dbaa44caa80a3d031d44",
       "generated": true
     },
     {
       "path": "go/internal/tools/covergate/main_test.go",
-      "sha256": "11c6884a723ef339caa94d49c2e2c24ff142f1ca84cf9439cea1253eddf19eef",
+      "sha256": "f29e32134b7f2cb297056a028a7629ea1d8615879c1fddd31d37d3db513cd358",
       "generated": true
     },
     {
       "path": "go/logging_batch.go",
-      "sha256": "a9e726de5c863819525e899604cb015be6b3a085a685be28282b46be15613050",
+      "sha256": "30fa38f25378e0efd92c0450a0cbe97c741232570db3efce0af7a8199a81b5fd",
       "generated": true
     },
     {
       "path": "go/logging_batch_test.go",
-      "sha256": "430e2a74f03ea31165230165d042d6366a76bd0e05a031aff34c0f7cac544b04",
+      "sha256": "7ddfee1a55deabf97322dcf079c8da619cb939651f9e429e60830fbe166cd49f",
       "generated": true
     },
     {
       "path": "go/logging_client.go",
-      "sha256": "7b7ff8235f569f0f3615b08bb00b94af1dea476cc03983ca57e015ccf3b9f88a",
+      "sha256": "695448d9039c27f12a133e06a08165b7eefff371c0be14174c8560b27ddd762a",
       "generated": true
     },
     {
       "path": "go/logging_client_test.go",
-      "sha256": "5b3f06ebd1d990a27773cf787d5b393f9e77ab003577834d08ed8ef677e9fcba",
+      "sha256": "8d974fb99ea9116f2ccb9c0fa94843d5d6a1a7d70e2a46b94325e79c6ade1fa5",
       "generated": true
     },
     {
       "path": "go/logging_json.go",
-      "sha256": "824fb028b66e63d4ea353dd9047a5091c6ec8dd8af8eace50d5f39ea1ff5c7c5",
+      "sha256": "be67fb5daf82b1b6314952879c20d88648446032d8810784b4d83ed6a8add69c",
       "generated": true
     },
     {
       "path": "go/logging_logger.go",
-      "sha256": "38442db2803f0a83886d3790248fc612ebcc3d86500650d781759d09640abf6a",
+      "sha256": "c96e561d059e2818429c2f2b509390bb0310e3b87fbb763bc17d68764d0ef97f",
       "generated": true
     },
     {
       "path": "go/logging_query.go",
-      "sha256": "658fd1291a9f918892739b54a61514ce7bd36cea64b72df172e40629d222bce9",
+      "sha256": "a6bdd3e6fa3e2039dcaec9be3bb8aa0b6ff9742561b5e8689b43c83f4055965e",
       "generated": true
     },
     {
       "path": "go/logging_query_test.go",
-      "sha256": "4bb76580b50a6d4cd25b0adf405ce230b85e579d8fabb5030f539b0904d9aef6",
+      "sha256": "1310b514db5e1b564b115e09300c3ae5134e66229661b304472a15ea71f5f64f",
       "generated": true
     },
     {
       "path": "go/logging_redaction.go",
-      "sha256": "134b927de2fd2210ec64a9079567ee0e7dfdf34b80af7d883fbe2799a2f54e64",
+      "sha256": "c3799566d6e7f747165b08b1e8cd363b2b8c9cd2fab8721d7c820018e5444071",
       "generated": true
     },
     {
       "path": "go/logging_slog.go",
-      "sha256": "1a1bed679a4e22c0c44493a38b0fa4e09460991f4fc7616f56a516c434915531",
+      "sha256": "af2a7cba618616eb9b6534a30f267c2e0198657b6ee93d9576328f2c291e694f",
       "generated": true
     },
     {
       "path": "go/logging_types.go",
-      "sha256": "845d7a513d94410b184668d9fa0c449d1d6b36799e6420b54bc30cd88dd46e82",
+      "sha256": "3e7bf1b373fc0649676b403f6520d63414f45ef4665c650b5c7c705552cdbdb3",
       "generated": true
     },
     {
       "path": "go/logging_types_test.go",
-      "sha256": "4ec649196b1787f4f46591106c72a7bdc72cf6061d2f45350dc07031e6ac3532",
+      "sha256": "691a86cfcb89516c0b04cd4dffb62f549e1352f180f778d6c397edf287c5cdc3",
       "generated": true
     },
     {
       "path": "go/testkit/core_ops.go",
-      "sha256": "c5f675d530ba8840a518b7d50a8eb8de9e025405e497ff0b0ab00463a71d9d99",
+      "sha256": "f2e6de8a1799ab407f6b784c75b26676cf7f0991a7519803463ab855ae9433c7",
       "generated": true
     },
     {
       "path": "go/testkit/logging_memory.go",
-      "sha256": "3acd1e54ae7e5cd7dbe513aea5983caefd5ba13464edec29cb3ec82b24aaca39",
+      "sha256": "81e7c39cf9aedf4dc4e6afde57d424d2ca46bf083f1fda5533b232e5613468d4",
       "generated": true
     },
     {
       "path": "go/testkit/logging_ops.go",
-      "sha256": "80bdc700a7067af376a1554e18604cc7ec7f06b6231ade987befc56586834749",
+      "sha256": "d3e5afb15eb624a643ff093b9b5c77e8b3cd2e5073f2be4ea8eed13ce1bac876",
       "generated": true
     },
     {
       "path": "go/testkit/logging_test.go",
-      "sha256": "0976dbafa8847cfccde2f16031623032c30a4966c8fa68b12d7e3d3a30ff986f",
+      "sha256": "c9c88fdb2e8ba6d8ae1e4a6641c700a0fefbcc9fea91db96f3414a094d97a55a",
       "generated": true
     },
     {
       "path": "go/testkit/runner.go",
-      "sha256": "e7b10c02764a53f5bc20512723cd815c224e1576e57de10f549c3964b2d5eb9c",
+      "sha256": "ad91084f957f026bcbf7d5fb4962c40f3c413c7abf84459c2353cf3392bb84df",
       "generated": true
     },
     {
       "path": "go/testkit/runner_test.go",
-      "sha256": "0254604a76364061d168bc0e9ea04ebd3a2f62f739e4645bd3e6387a34826dc0",
+      "sha256": "f0c4c51441674797282198843d33f5ea3d1ab80fae40c0c563c53262499d1a87",
       "generated": true
     },
     {
@@ -666,12 +671,12 @@
     },
     {
       "path": "go/zapadapter/zapadapter.go",
-      "sha256": "845644b33ef74dda580bf34b7e77e442264e5bad57e3df609865c759d6a2f4db",
+      "sha256": "76d0a087ee68d7b973359d6f56586eda47e4b0f694b33fe3ffa48775f9c15dab",
       "generated": true
     },
     {
       "path": "go/zapadapter/zapadapter_test.go",
-      "sha256": "a4bf51ec4eef47b2fb83b49b7ecf1550de6246da82e0d09b95eac064e4a0ea22",
+      "sha256": "c8d939174d817bd207a26eb9976566839f7298ad344a71c549504714d67fa5d9",
       "generated": true
     },
     {
@@ -696,12 +701,12 @@
     },
     {
       "path": "java/integration/pom.xml",
-      "sha256": "f7835edc69f573c5f3d44cc9d687ec7779d3d37d6e7ecb1569025c9fc9c2b448",
+      "sha256": "e394c19911eb56943fb1b8b5cc10a4ea5811c7a19887adcf2b1698b6344b993e",
       "generated": true
     },
     {
       "path": "java/integration/src/test/java/codes/grow/packages/betterstack/integration/ConformanceTest.java",
-      "sha256": "9c4f2e0584bbfe2c11a8d5e0ba8c5d79734bb0913dbcb051d198a2cebe22e111",
+      "sha256": "31e5d5d7176845e3747ad2250d536606b868646a3367e0ea47397b29f458358c",
       "generated": true
     },
     {
@@ -721,7 +726,7 @@
     },
     {
       "path": "java/pom.xml",
-      "sha256": "fd151d5089ef4ff5c049e25e8238dc56bb4e3e877c10fb37069f5c086252feec",
+      "sha256": "9c94699d210f8a1f5073f3f9b9b1f2afcf66ed3e87167f59fdbddc48bdc36cdb",
       "generated": true
     },
     {
@@ -736,302 +741,307 @@
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/AuthenticationException.java",
-      "sha256": "f19b81432ac2dddc2ba79bc9152dabfe59a81500cdc9a949ea053d684dd1c7e5",
+      "sha256": "fe860bab4e50b25990ade5900689946e32779d6d229782063daba924188210fe",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/BetterStackException.java",
-      "sha256": "5440d8e02cdbd82d090437388480e710e2a0170d50c688bb23c8e855d303ac8c",
+      "sha256": "b682321aea5086f84bce10d579c6fe337cb92cd683fba933476eb3502ba451a2",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/CancelledException.java",
-      "sha256": "6f5fc3039448b6b7714251f4a7bf3e9cddba88607b1cc20b4bc18049c734d288",
+      "sha256": "64a6cf27cbdb54ac1a5ada2336ce6549e95af8da9dd28c5d2cf45c7f07b2be36",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/ConfigException.java",
-      "sha256": "32368e3a51776e6ac535c6005c0ebf6a7cc51c732377a5f97dabb54dba4f48c2",
+      "sha256": "cf772c5a77d2b26daed2310cb56d128d01d41a3bf98e127bf35e80e01e9fa0b4",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/ConflictException.java",
-      "sha256": "bce9d8c0569ac2d2c7b384888ec1a600160b47d0405a7e4e6388a20d38749e80",
+      "sha256": "5443f60da59470c07e37d511609a119372bfbccd75c8eb1ed38ab358a43dd11b",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/EnvReader.java",
-      "sha256": "84e0e7c8da24dde7bd021558fa7d1e68cad20dc237d06774073c1343383b46c8",
+      "sha256": "f7d8af806c7ea178db3be70d31802c7ffbaa558e616bfaba6a11592e6df7eede",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/ErrorCode.java",
-      "sha256": "be859a116cae35f7d1be2ffcae883f6c634a171951baa25f6c41f0f119644e81",
+      "sha256": "ad64b32e4c89c1caa48f0de025440ab92872f12d935246aff0ffe169ba83f7ea",
+      "generated": true
+    },
+    {
+      "path": "java/src/main/java/codes/grow/packages/betterstack/core/ErrorMapper.java",
+      "sha256": "79e344c4b8a92ff853d030b4f3ae14448683429bd0f2ea2a43311c0e71fb08f9",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/HealthCheck.java",
-      "sha256": "e6d545ad5b79422982baa292cbcb8577ce3ad8e43244358b512fabde8cd0efec",
+      "sha256": "42797f94f84ae1b07a5185e019d97ea649aae6c515f8ca9c34942a99a99a8090",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/HealthStatus.java",
-      "sha256": "c79c769cd333babef58070c477078a81f7b3970479db6ff424d3102dddc7c556",
+      "sha256": "67283c17e3801babe87f1f110d3b75f859811bf6c6237a9706f0e201ae1231d2",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/Hooks.java",
-      "sha256": "d0879cddbfaeb001700ba083037f37c7733ab3e669365d43a43f98cc0dc0afd9",
+      "sha256": "416e3cc97ef13e4020a697e4f7ec1f172df403265fca3ce85547a75da815bb5a",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/HttpTransport.java",
-      "sha256": "2fd2ac88866e0880dae622a5e942409fc9bf86804ebe6c0f6a3f77fc5dbbfe26",
+      "sha256": "6e37677ea6b5a96839a9f6af6921a3a614f0cc02b8024335e5747423e37d8d7d",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/Json.java",
-      "sha256": "2517d95c32f006ed2f4704ceff24147b409cbc5bba6705aa157614b2dd28f6bf",
+      "sha256": "ccddee02a61e06dc06d0b33007019ae9bd74977aa174d087c6c42c10269e8e48",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/Logger.java",
-      "sha256": "6244ccfb597ff12c9494d6cbf706edcf9755226c19326a6d00b35330751331e4",
+      "sha256": "fa4528edba17a861a7b7c407ce72496c3659480e33c4845e465382aa5754a28a",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/NotFoundException.java",
-      "sha256": "97bb9200f47af4f6b4a8183ec29c8c26a60e54a4c582eb85ce7e77586ce7e9a4",
+      "sha256": "898363dd40c67d71f1a643ebcb093929f5c32f9451cc907871a3c75a5c4bedb8",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/PermissionDeniedException.java",
-      "sha256": "3e1e0b47c9c72cdef4d71644ef10b1103476096b7f51b1dec560d0c91c3ef398",
+      "sha256": "1e63047d3b6891349b638fa949078a5b79961d6e5ce19d9925e52b0cc6032da4",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/Poll.java",
-      "sha256": "3ab0ed31b7c8b65ca1c4916eb396412605e0fe8f46cb6c8ec9fd1187181696de",
+      "sha256": "3d0315d62f1334e6264619453581ae32abfabde6a40cb80c73066bb0eb9a2d82",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/RateLimitException.java",
-      "sha256": "13bb26cb8e380d17568e4bdea7840f6e624a483d4aff28754bee185c4923e9b5",
+      "sha256": "0c759943e544ab2ffda77257bc508855712b6c43b66767713aa26e231b836e40",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/Redaction.java",
-      "sha256": "27515ad6563dbe282247aa3ca7d0ca99ae8dc599675c631d4fd64274cf807455",
+      "sha256": "14105b5541ff0bb3a4ad6942f48a37c7ec40a2c6ea354786ef3c069f2d383999",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/RetryPolicy.java",
-      "sha256": "2f01f2d96663768c0b000d6fa6f08bc40dcfd95a35d607d169a3228dc9191896",
+      "sha256": "2683a27b208440290907864c59b7b8795c8c22ce5cecccda1aafe3e75fe1bcb8",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/SdkInfo.java",
-      "sha256": "f93fb3bd14ac6d43a71d829c16d230ea9f34c09110496d8f6fd7e84cec40131a",
+      "sha256": "eb5113723dcd954be309380c8fc1d67a11454bf0e3f496e7d463718e3b8c6e59",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/Secret.java",
-      "sha256": "2ddf78dab154a1a514dc26c8c19716f0c3c9e8ade7a68e0589720dd49c39a333",
+      "sha256": "2528cde86139dc5c7b83b979dd4019600387243164df503fc65a7bfcbdfb8fb4",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/TimeoutException.java",
-      "sha256": "b3921f8f47aa94141cd0d5d34cdd67a8a7f4ad4a938c766069f1c75ecddb0940",
+      "sha256": "98f5980604b09711e706095274a93fe1d7b1d798211651e34978842ffd4208f0",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/TlsOptions.java",
-      "sha256": "2d61472b03cac2aac2ddf8c2de86fdcecb6c3f16ad47c0796fedbe951e0468b8",
+      "sha256": "6a6cf61ada2671983a8e49bd94b5c6deb01c0bc0d31d7eb976ad2a1d1ff782da",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/TransportConfig.java",
-      "sha256": "aef3110dfec14380568b0b4ba148f8e76bad9e7e53864392143e47d6dd58bb33",
+      "sha256": "aa375f7b76aec4f90f23b9752bc0401b472013c1018346d1174e70cd0749b1a7",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/TransportRequest.java",
-      "sha256": "e38eda3c061b2bd92b9e37c29b89d3b27183f3c4ef281bb9eea9ef95c7ca4734",
+      "sha256": "b034f6860ab6d0c95237587f95fc39138920fe068f950c065accde9dcec1f34a",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/TransportResponse.java",
-      "sha256": "e7ba0b5b90476b77d5ee6778b056ff26de118bec9e2247ffd4e10d3d78eaaac8",
+      "sha256": "a1f926a4e8bb260f4bf42a838da952e68ce2c731d7a7e5109331422136b95a8b",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/UnavailableException.java",
-      "sha256": "e877bf4e2c7fe3e62a3078ffd6151bdad12b225a29a44e7af5643544795bddce",
+      "sha256": "d3092abb87c485dc3cc09567398cd55cc8729b63b489c03aebf6aa62d0624906",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/UnsupportedException.java",
-      "sha256": "18d9c9f666cddca70b43c1a173fd2eebbfcb3529a15392a6a20648ac2a8d8e72",
+      "sha256": "0c249b6892ba6a068b52c25a453868ca3829fde0af0e6bc3293ce9dc35b4df90",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/core/ValidationException.java",
-      "sha256": "6d619b8d65b852e66e0a9de76912c02fd4191cc810091c836473326de018d1f2",
+      "sha256": "0e9bab3357849b2915a9d313f8760710b5187496498423996233c01f4dcc0052",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/AdapterSupport.java",
-      "sha256": "326d187b456a3855850fd810c3c22b668e508f6b8ed7d22a43b63d97e5078547",
+      "sha256": "d0f7fee2bef615001cd54a31fadc39ca896f80fbf2c3a1eb12af48273732a8b7",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/AttrValues.java",
-      "sha256": "2c972543c2b00afa702a8aadf4e62929cc8a44b096a1cd26d1b90be030f58c7a",
+      "sha256": "6c3c915f4fd638bd60b086de91fc51f5b220e068aaba22e63c9c945d2f1c3604",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/BatchOptions.java",
-      "sha256": "da11cc74487a37bdef2f6d88d9d7365b732b56cf4cdd62867eddaad8e2614165",
+      "sha256": "f69fc78afc2997c1d2d5edb0d5004e02a422ba9b52bde45e2f1424b05ba3edc7",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/BatchProcessor.java",
-      "sha256": "49d378627ddab0b72c8f6ea404fb788ab5221b2fb9168f864212bbe3aa05eb23",
+      "sha256": "81f27660f5ac808005282c9e2358f1623dce5891d1c7fc1a4839fe1efed5270e",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/BatchStats.java",
-      "sha256": "15f8dc7548708c0ba9771985ec82d13072c2771187382e1dede101b4ac6e5638",
+      "sha256": "7e07a61e093dd645b38a307ed725e3500fcc7385ec7950d0aa03f29fce72cc3f",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/BatchingLogClient.java",
-      "sha256": "bcb50357c12baa10b119520996b54574a52d2db34e63cd05b43839c115d3bfc5",
+      "sha256": "15556b6043b8b74a5034934ad6c62536e1ef08a1c1ca61d40e4f5edc3f27e9ae",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/DropPolicy.java",
-      "sha256": "3dee591e47876cce35ebb59daf4adc1ff6d379200cd4f02f5144b976cdaf560d",
+      "sha256": "27d707867d72883fe7741983f8e40f8251005f6ead8a279c52d869dee386b7f6",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/DropReason.java",
-      "sha256": "f20484eb90b45214a6e5a794f9a31a08591963b10ca340ffe22f36b8e9983038",
+      "sha256": "e172b0159688673558080850d588a05551ba29d400677fab828ac4493aa11a09",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/ExportOptions.java",
-      "sha256": "2aa85efad967816a8db0df9cc7a87e1f10a67c0eb711766eef9b9a7804c1563a",
+      "sha256": "b8e523dc9d48b87003b7a525c58518cc3d09d2a7133c0fe73ac589e122cb2a47",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/ExportResult.java",
-      "sha256": "cd2818771c3198b505f9d85213fce41f98cabd96577f151302c7248fc290427b",
+      "sha256": "6d6fcbaafba7d2c752dd8179ca2cc2b49280cc5640086b17c9c8067fcdf9e029",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/GrowJulHandler.java",
-      "sha256": "d4a257c33004919a603f9663cef0fc578eabb7a9c55dd344149cd145e0de46c9",
+      "sha256": "ca65a6b5348cfbf2576083912185d3704b58bf3ad0899abdfaca355f444b0eb1",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/GrowLog4j2Appender.java",
-      "sha256": "324d10a228cee9b86f763f4aaba566891dc14248371bc16cb036642a52a2dfe5",
+      "sha256": "89fbc85bd65c0e89f670c0f67587463645099b4053048daf4e9dab4ac6aea56c",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/GrowLogbackAppender.java",
-      "sha256": "1c662fd2503e0462ba60be2968afaaf3107ffb1ddde7b1724ad964c27a05ce09",
+      "sha256": "5b46d705915aa700a0beebfec2442220d461d9d15828ee937783c8f681053d3f",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogClient.java",
-      "sha256": "ab0145d379407ed44cac42ce7ba97d9972a7e649437d5da2d39f265d6c4b9ebb",
+      "sha256": "fcb7b60bc7cc822de8a3c24af2c8d1bf1194b4664ae0cbbd904ee87ea1bed41d",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogEntry.java",
-      "sha256": "50af9b5773f91415664f177d29e9bf94e1f6afbb962a8b652dd1199d45ae0df8",
+      "sha256": "c9083022c52f9d0b3f8a46af3917d99611716aeebb01d6ad4378938a43966ec0",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogExporter.java",
-      "sha256": "e068f533b5519e2625ad933faa0dab4fca3f707b98530756428cc0232eabd172",
+      "sha256": "36880070c43f74629964bed9ccb90270853c53ae6d968c8ac66f4bb4537e77ba",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogIds.java",
-      "sha256": "4d41c625cc632f851eba95aa170c8d631cee9e2a6658008b28892e341bed2813",
+      "sha256": "acd6fd4742d9f9045f563881efabfd52bce12f645032decaeb5988a14fabbca6",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogInput.java",
-      "sha256": "9e44b9894340d959218f066643042ef4527cdf1034c9a7c540521b8b3305e2e8",
+      "sha256": "4106e3f7dfe23063ca3a499258594976e181775da85d2add9b39744773553992",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogQueryClient.java",
-      "sha256": "1e2e5ff1273f20116a3a03e671a4acbddf393c6ea204ec34124dfaa307b2ba2e",
+      "sha256": "5c45c905a1b92b98fa44776d16ca5b5349b698b67f71c19c10416ffff2528f92",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogRecord.java",
-      "sha256": "6bcd97ecba5770d8e750b7433295430935107f5f0f201daea2ede36bd4e2dbde",
+      "sha256": "de6ce960b77ec9172e224dd3e247a96ff38ad2fce23197d442d62fba460f9558",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogRecordJson.java",
-      "sha256": "dc577e62b29d8d2729f051108d54610584b7920ca5572774d9e0fbef7f06a38b",
+      "sha256": "0b6fb342227a6e504ecadf623b6cec4e5887a06b2b071f7aa8cc33147bef39bb",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LogSearchResult.java",
-      "sha256": "fae3059c5350031df4fe594969632d1578682dc59a2d27c62a672df281000100",
+      "sha256": "05dee0915e2fb236f8ff63708e6970008c2a8157ee43f3b6ffabf0d3e496a062",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/Logger.java",
-      "sha256": "76228224d280a191e2b212c336161e082644656d18f1dbb5fbd44fca35e3996b",
+      "sha256": "dca8f888fd68829abbe54e8854b9871213a9b6d4699ecb31ac4fab35fb4aaf47",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/RedactionProcessor.java",
-      "sha256": "007595cabdb72466c1aa93bdb296bfc3c99d79f5e825c71712844dccc2483bb6",
+      "sha256": "49f638c96e1d9c857130ae9faf07c73d22fb1f220c7a9b7069b3df14ab289e9d",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/SdkErrors.java",
-      "sha256": "3a77b298636123fab77e20dbd68dcccc4558f714281acc7e7fad6bac8e215d19",
+      "sha256": "ccb7354008cf74532c8c4e7cc392482badfc04802fb842bf834a4296d5ac9bca",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/SearchOptions.java",
-      "sha256": "6086926029288f6e31432e313b177a0771822d05353bea1aade47ec14d127c0e",
+      "sha256": "0240413a158480e5180226389a49014845708f13dcd4a9c7f2c250d882903cbd",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/Severity.java",
-      "sha256": "15911dbf3f78e267e7782da6eed771f564828e672809fa415f7e0339d9bd0e4d",
+      "sha256": "9b7b9340ef1ac994a53651102a668b1f250a2bd3970bdbd9686255b0ad6ee482",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/SortOrder.java",
-      "sha256": "e86fcc14814e6943bd05fa930f56be2916cc025da5e0462bdf105d2bd4a610c0",
+      "sha256": "fab903a67f56f3726f3885d30cd0a14e9def28646d3e031d9b2b0696c1992f6f",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/TailHandle.java",
-      "sha256": "feef976e3d36b319fb231c066276422231f1a897c7d9325f0505bf069e372a21",
+      "sha256": "b9d59f1329e7bbd9149baba6028add46bc3db9a95d53f25a5aafce10fdc9a4c8",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/TailOptions.java",
-      "sha256": "df8581d48bab781e84acf21ca6cfcd9befeb054985c74b3d988b6b838febde5b",
+      "sha256": "c33525cd89d74184bf99859f58f36a44ccfec40f66d1c868a7f0d89b6fcde356",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/WaitForLogOptions.java",
-      "sha256": "002b293b616acc5991891b6b93e5f49fb2ad2378df9741cac0c608c59b896e68",
+      "sha256": "2e7c1b0073d70f97e8997b818f194befe2817fbe9586fe8210968a6095c0a2c8",
       "generated": true
     },
     {
@@ -1041,82 +1051,87 @@
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/ConformanceOps.java",
-      "sha256": "f1f319a81efb9ee29a5d55207f5d0fd4ee64de9cdad32cc1dbce5c31efa02d20",
+      "sha256": "e06f5ead1e3988f9d7f65ad5927f5181bef27281357ec68e258bf527953284d9",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/ConformanceReport.java",
-      "sha256": "f339f7cbb301890e552030c3b4cd6c666e35e097b2d4540c11c75bffd224a1ee",
+      "sha256": "9c160e58f18eca188443584d75702cafe692dad9f6c982649dd4d3b5c1095ef7",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/ConformanceRunner.java",
-      "sha256": "7dcb0c3ef71c547c50900f0925e54460a1b4854bf89e7959e9e0b17ddc78c85d",
+      "sha256": "e49228992eee4b5a135d39eba673796b2b23e767c2be98b2571e0772ea8c530b",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/CoreOps.java",
-      "sha256": "366d631fb40de3b57661485a0ee179869e54b1f4d5dd1d953aec53686690691d",
+      "sha256": "6ae5a39fd129b74a20ea13aa43ac9eab5783256d864ac9f60c5822e4662b61aa",
+      "generated": true
+    },
+    {
+      "path": "java/src/main/java/codes/grow/packages/betterstack/testing/CoreTarget.java",
+      "sha256": "9542afebee9b6d2bb7633ccd5c96fd83a63c7c47b89415427d3786789b5fb0fa",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/Expectations.java",
-      "sha256": "827da6961625abc3271ee254d72217332f168103b409d5437576b8d1a111768e",
+      "sha256": "25f85ddc96dee41112bf74eb1c71ec88427dc697c1e6e51a232635ce10145bbb",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/JUnitConformance.java",
-      "sha256": "ad23449b7845bda6a4bf3a38a5cddf82066b68282ebddeeadcce0c730f3ca514",
+      "sha256": "d757c126571fd6181973e42f9a914d040845ad7cf20aa93ccdc9cc0cd4270306",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/OpHandler.java",
-      "sha256": "ca9d27e484737deee376d4239b3111d9bb2e5f9118a24bb806462e0db5ef2299",
+      "sha256": "fac53d73d1ecb406d6be7d349e89887cd48bfff20b01d60da69c58509e59f992",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/OpResult.java",
-      "sha256": "940c7a7bbe154d2a604fd3e1d42747f54d72f2db30a43985971d6ea585ba271f",
+      "sha256": "e9fe617bdfe88d4d978267c82440831488c634a74fcc9cb6171d295860870fc1",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/Scenario.java",
-      "sha256": "0c50bd287355a24aa5f52fe0e8d832fe63d60465a96f87317b03ae423d002dd9",
+      "sha256": "e6508ac8193e36e3a7a6b581145417d342699276eada19db6f5d8814e56b71f4",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/StepContext.java",
-      "sha256": "96bb492ba0ae8d97e034b3a7a326566c2e1385d4263f10fb768c0274dc5b99e7",
+      "sha256": "74960e8ba3a9694ff6f8b13c83baa17bc494f1104c3b7b209f4698535052039f",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/TargetFactory.java",
-      "sha256": "9a6f6507d2a2d1f0da80a53ef8a495f18c7801cdcea14634bc53225b348858f2",
+      "sha256": "06791d4473895f78f8dcea2c4bc99d9fdcb8001a2c872f0668936bcc5630f91d",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/logging/InMemoryLogExporter.java",
-      "sha256": "e3214edcedcb21db487beeb96ea6beebcb8f7c1b1698f041744d6c0887c31d7a",
+      "sha256": "9e4839389e888e0427c44266ca6059ee1cce5835ba7bcd107095a2895287a766",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/logging/InMemoryLogQueryClient.java",
-      "sha256": "ff1194df6712271d196cfa789d54634271755f1cb17c6cdcbc52c2726b4b8a0c",
+      "sha256": "4394188b8b772e2cc2a9cffe4c0785cb3a99515b5eccb98e91afe5902b38c2b9",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/logging/LoggingOps.java",
-      "sha256": "9b92c0033900d251a6ff9c665e0052712a17a5bcd17aa1760aca505edd52d37a",
+      "sha256": "5e0254e1ce22a058ef40403f74483f0843e24b4820a285a1b3023a3009a49bd9",
       "generated": true
     },
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/testing/logging/LoggingTarget.java",
-      "sha256": "31a68fdd6f07201ac57483225c4f7e0a39ad8a466bd7bffbd6e7cfaa5c2ff90a",
+      "sha256": "f1f41cc858a052df4e2a508a1de090295a397078a84872dccbda5ac2ff16aa21",
       "generated": true
     },
     {
       "path": "java/src/main/resources/codes/grow/packages/betterstack/core/sdk.properties",
-      "sha256": "ebff9fcbd5a21e80e2b27e312690a04597abe650e02121a313b79a11f6a96f1d",
+      "sha256": "d11c5ddae78b285319b4e4381d54c03ebae4058cd96de78110a2a0da77367a87",
       "generated": true
     },
     {
@@ -1126,57 +1141,57 @@
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/core/CoreUnitsTest.java",
-      "sha256": "fdb04967a5e832aacd6a0a4479e86570bbd7b69ca7cb39c8f71880670d05229a",
+      "sha256": "6ab841432e3c781211e1d1e68dd8a8dfc52b3ce329c4408b2ebdfb73020a1084",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/core/HttpTransportTest.java",
-      "sha256": "89e4243839f7e38bf8e765e3271d587c51b291e1708ad859e1ce2623dd5a6be5",
+      "sha256": "39bc9a2f8c1046efbeca84428f1c2af8d740a11c26f13fe5e257105fde72e6fe",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/core/MockServer.java",
-      "sha256": "66dd113462f6ba145f35364a89ed7d4f04d465f6119f5a7e7fb4daf6432d7400",
+      "sha256": "eba6b3b349659f11c980d318624f971c6a31f82dcf57b522f2e31673234bd000",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/core/TestCerts.java",
-      "sha256": "9d2b7a81074eca974e142a59a8b63487c882e2985b04dad6a832280c78e91b69",
+      "sha256": "53c0fd107e04ac8a4973b531cdc36ed1a0839f019bf9c9701dd4a1cb1ad8301d",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/core/TlsOptionsTest.java",
-      "sha256": "40f0f6774af4064404883c396dbf287f680ccacc71f9c177192fc23724c1d3d4",
+      "sha256": "d1e63757b9bc8142a871e071c8c868e057c8b3e69f125adc9d97e8c6111c8811",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/logging/BatchProcessorTest.java",
-      "sha256": "f8f8cf1163fe0de1397f882f8a098c2b6fec6df4a830047522da573c8e68c54d",
+      "sha256": "c58afb1ea24a278d1b2810e4abdc3ce041844ac526f97e525af4b4e8f91a4b77",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/logging/LogAdaptersTest.java",
-      "sha256": "590587dd5c9c30bf3d6e26c3c6d7ce3bd9a38de419fa5dd37838c521aa8012d9",
+      "sha256": "8756705eeef628ed101527f171e94e86694a839a057454eb4c93d3294724e5b3",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/logging/LogClientTest.java",
-      "sha256": "45516ac7528b94e719c0e538b1f1aa17552c5c0f7b8bc1cea88b80ffe2b10606",
+      "sha256": "0e1c46b5385e68fd627a7591979c195d4498e411b796bd84bc0703b91d1c9377",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/logging/LogModelTest.java",
-      "sha256": "2a47b75d5b1fc2e37e1b2bca992f1797acd54178f949b07bb034e1e8f6743e73",
+      "sha256": "77ef7d7f5177862a51d978b43f8358a1440000cbfe46d207bfbac77922eacea2",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/logging/LogQueryTest.java",
-      "sha256": "960c8085bc62ee5a9037aa5ab64728368ab3fc957f601fe226edfe51c1e95037",
+      "sha256": "a79038b18d79866164cc67435d505061fd80589ff9a117b60ad2c661fb568205",
       "generated": true
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/logging/LoggingConformanceTest.java",
-      "sha256": "ba5b6bcfabc6d2939973a7d5bfb262d49ea278e486454e5bc614f307f98a0e19",
+      "sha256": "1de5658c558ca9c2697d374513177ea744b05355e9e3e2d05d69b2baee1aa9aa",
       "generated": true
     },
     {
@@ -1186,12 +1201,12 @@
     },
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/testing/ExpectationsTest.java",
-      "sha256": "49d3df3a97c659f803e4d78db2d5a05d82e9103dbf6fa9c1fd102206ba3cdc19",
+      "sha256": "05a3859589b445561c583cb3e59ac342bbb842d32565969f97a48a36a4fb5497",
       "generated": true
     },
     {
       "path": "java/src/test/resources/codes/grow/packages/betterstack/core/unfiltered.properties",
-      "sha256": "a88a09dfe34d8e66632ba9147b2b18996e665eca259e651c8ed75bc993a29461",
+      "sha256": "3825f177e0dd04a1babe2ddec8fb1cd2d5cd09133e3bd8c2b177bafdf15dd38f",
       "generated": true
     },
     {
@@ -1261,102 +1276,102 @@
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/__init__.py",
-      "sha256": "415a0779c02aba467707f2516a2b87aa782bcef6030b7a9489655212068f939a",
+      "sha256": "3dbd0f2e8886c00bc4f9c62d13990916e173b9a5345a6787855079e1a68fc552",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/cancel.py",
-      "sha256": "3f7cd6569a2a411109d72f9b3ea245db529546dde0fddadf2dd4bf5ab672b13a",
+      "sha256": "c4e031bbeb72358d0b8f47e0c383b34a63e62cce4984e28eed042b5de0d7e2e6",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/config.py",
-      "sha256": "8ef51c38a63d4b9015d607782919a0b3e611ca9a6c6c3cbf3cc2f5331889e82a",
+      "sha256": "661c34cad114b202d9b31706bdcb6080f14c4c3e9d8e61d9eabe912afea3f222",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/env.py",
-      "sha256": "b1a59e93fe7bbf456f90bb10216ef0d0f992c9a24154ceb620f27556620a1124",
+      "sha256": "08b26d428cc5af753de57b9f165a41ebabac3494f115cdebc07bbc07258e5c7b",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/errors.py",
-      "sha256": "69cd0a8435948735719e259b029e9e4673c8931b83f1494a9638eabf3a0d90b2",
+      "sha256": "d81af4e4c6bbdcb5255320e1ec7017e1f4297b25a5a0d3cc5a191e22c43a4db5",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/health.py",
-      "sha256": "3fdfa5506479435efa0c3c7d6a6ad412ed06558fe23bd8749d1a254e999adc16",
+      "sha256": "59c5ad4ab2066ea9f6697703f30046b059e404407fb4371e0fd0572dce960684",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/hooks.py",
-      "sha256": "2126bb03af18b2fcf23e0a8386c72b0722198b3981c660ceae5531cb87df493b",
+      "sha256": "57e5840461475296468bcc207680ca7fa6c701a20a8eaa8621dd1633f24f52cb",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/http.py",
-      "sha256": "bdc617f2e0c86f8d3883da81c54493252ceb7dfbb869990e58840763a748a7e8",
+      "sha256": "a5a37a9778f04d9c5b671b76ccb53ef6ebdbaf81de7ec66f9e4127ed59e0adb8",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/redaction.py",
-      "sha256": "354a48f3076ad34b136fbf12605c787bddc9a5cb2d87ff15d6af3c2152ddbe01",
+      "sha256": "5d3f10101c7bb89ca2ecddb5bae819759c5febc374d42e2d360bf5d87fab241b",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/resources.py",
-      "sha256": "eb3fac01dd54e4e732fbefce1aa7000fee023cd694ac6d1943d7984cde77fb1f",
+      "sha256": "a3437953878a133a3d1fa4de3c5ac55b90430f61dc097d5f218231f2333ecbd2",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/retry.py",
-      "sha256": "41a2a14735390a237d21a78e91e827e6f6d2b2fdb037ffdd4052675213a9c756",
+      "sha256": "66ce41fa8e76ccc9431568487d1bc42f9bd98d8ac05d4fefb08aed2f43f1b8b1",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/useragent.py",
-      "sha256": "4e04bf212cdf709c999dc2f7229f2cf0dd3e861c87e74d8db255ae8e0a83c1a9",
+      "sha256": "0b477b04289a6d28db39d17216a107dc1ab838cd2697bff105754f2241f25231",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/__init__.py",
-      "sha256": "a009d16392fed60a49a65e6636315bd4a37a208780aff8c8d0c15963c909f290",
+      "sha256": "415140f881c05bdbfde1ea6a5598ff6310068be99e0d55bb4b8c7311a8b13d3e",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/_adapters.py",
-      "sha256": "43b51f030ff94535e47e550fcaf22ba61cd3e9c7e04fc07f82523c0cb6e7bb32",
+      "sha256": "403625d42b8ac3b84b6d0d81d8f1de85f8881094c197bde46ae259e9d9c7ab54",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/_batch.py",
-      "sha256": "d01eb367b68dea62197a90229f41f1e3a43fa59458a3cb48dc949b91a01f7c17",
+      "sha256": "090821565773282c4179acfda3f4c6a15f96a24513fd9f3e7e14e584a8a3632e",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/_client.py",
-      "sha256": "2fc402a29687c0f1c275fb691df7acd017daaf020e7be575a5a94530c7fdc51c",
+      "sha256": "bdd51b892e0bb509b8aa136165364fa7c17712d551915cc888b6065883307362",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/_exporter.py",
-      "sha256": "f8f68282f297a1bcebd915ac1966deea8c7923bd74d59bc2a0ba196a52ac297b",
+      "sha256": "9861c1d04f2b097f800b87ac4e96a0a270a03efde419d344e99afc790db9e38b",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/_model.py",
-      "sha256": "f8480bc14c6e20b2adf77543bff7ca2b67738666f6d831fb3700dafcc72c0b93",
+      "sha256": "d856254f7c03d1cae7212ce607f80e01a3beeb1edcd68d1f82febe34e99b4a97",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/_query.py",
-      "sha256": "a3b59dc578ec31723351bed62113e2d2c147757ece3037d9a824369604c66a78",
+      "sha256": "9b900f4f0dc966c8dc81aa81b36334361df2792eb06be2005084def7107191fc",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/_redaction.py",
-      "sha256": "27a9b1728730314a74c2c8f7aeb8751e0ca50e2f49428816810ef909fe96a0c8",
+      "sha256": "7f97fde2e883110fda75019c583dd8e4247e10ecd5a98cea0eab7fb514081d6d",
       "generated": true
     },
     {
@@ -1381,22 +1396,22 @@
     },
     {
       "path": "python/src/grow_better_stack_logs/testing/__init__.py",
-      "sha256": "f186e6afa7279849cf9e14d829dcb32e15cf1dcc881f154990cb7bdf5ee3f51a",
+      "sha256": "5bbae068f1d1ea9d52289c08ff3365442c11742124fc7500d25152805fc0fa78",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/testing/logging_conformance.py",
-      "sha256": "c2832926936541cb6246e3ea9f0ed42373663a33581096db12d9521d4c55a0de",
+      "sha256": "c423257c90f28bf0745bc78546c3c379f6d372bcc316a0baab44b8abeb19b4df",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/testing/memory_logs.py",
-      "sha256": "ddb342048a99f4e6feaa67eceaa78ba254b59e40c9aab29c78c195bd5e51ef3c",
+      "sha256": "5405fd4420373c92c9934442092bbc2ab150c3c0cba33d483d4760b3b87a08de",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/testing/runner.py",
-      "sha256": "658091fb8f5c6428190e3a04d6dc47e468980c549e6ed1f0a544e66750b64e87",
+      "sha256": "49ddff2c22481bd9a27843c1355ef29a30647aa9ef5b70012094b10fcbfbf24d",
       "generated": true
     },
     {
@@ -1430,43 +1445,48 @@
       "generated": false
     },
     {
+      "path": "python/tests/test_core_options.py",
+      "sha256": "356e2e6951b862b0cfb696719a7793d442fa8d8833277ad37059f066298e67fc",
+      "generated": true
+    },
+    {
       "path": "python/tests/test_core_transport.py",
       "sha256": "d2b15e65cae64a10cd3f9d4ebbd8590d2c77c28d99bdf4bc8efbc919c13238e1",
       "generated": false
     },
     {
       "path": "python/tests/test_logging_adapters.py",
-      "sha256": "c9a422f5e52aa02fd9ce71ad8d1e932ce94d2453d189baf8182fe7b3e0487b26",
+      "sha256": "474668c1b1ce6764663759acd22f89acea6719cfcbb319dbfa6dc60d863f362e",
       "generated": true
     },
     {
       "path": "python/tests/test_logging_async_batch.py",
-      "sha256": "5e79331de82b55988b179a66365ae875c81f2d8720b4513de01650917de0f42e",
+      "sha256": "0d8b18b1dcb09e65fe5a3867d448444e1d8c1bcc749178d9a72321576ce0f770",
       "generated": true
     },
     {
       "path": "python/tests/test_logging_batch.py",
-      "sha256": "1153e282165062e42f2eb1d88b567f54c90ec8d56ef2bb6d6f4b1944bd59f1c0",
+      "sha256": "639dbb733c696acd070af77143dea492b5c5dc8916cb2b63adb17013faee1743",
       "generated": true
     },
     {
       "path": "python/tests/test_logging_client.py",
-      "sha256": "10680b04a0b76989c925b85087c911ffbb38bc9414b1c754e1f02466f0f3cd3b",
+      "sha256": "fb0bb7630c404292174bc33eae82e371957449fa4ed0970b3c6691a74a947c40",
       "generated": true
     },
     {
       "path": "python/tests/test_logging_conformance.py",
-      "sha256": "fca2bc8f76b353de80a92526a057087e4c8a15c588fb6b16214357a54cc07ed2",
+      "sha256": "b2c2e67f1345b2898485add4f3ec095a492734b4a607323546ae1f25f56ce469",
       "generated": true
     },
     {
       "path": "python/tests/test_logging_model.py",
-      "sha256": "f7a9de002ec48ea54b8695f66d4f99c4a302c45e53351cf12e7c485864eebbc3",
+      "sha256": "f5b286b240f580773140f603bca93fec668aa4e2371957bac1788408d715ea11",
       "generated": true
     },
     {
       "path": "python/tests/test_logging_query.py",
-      "sha256": "886077dba5b1f37b0834f672209c34bab78cf858816a36c40e4a66526312f8fc",
+      "sha256": "a2137f347f8cc773fea80430f7b53a54787d85ce9ffc58c5a87a96ab2e069483",
       "generated": true
     },
     {
@@ -1501,7 +1521,7 @@
     },
     {
       "path": "rust/Makefile",
-      "sha256": "321f21b5f8a7382b29d44ff82c3216fdda41b38cc6d593bc00f5f6f0ca62fc39",
+      "sha256": "788c6091fc834804bf9de567b9390b3d57f3d7bdd7fedccc81f691a8df6126c3",
       "generated": true
     },
     {
@@ -1511,7 +1531,7 @@
     },
     {
       "path": "rust/deny.toml",
-      "sha256": "72a8595069abc9490478ca307e58852664d8354e91775df47ab02c89c47131e5",
+      "sha256": "8f9a2ca01759a273a5eb3e3ab3f65a94e5726b89e970401e58a4b6da81d1d3a4",
       "generated": true
     },
     {
@@ -1551,67 +1571,67 @@
     },
     {
       "path": "rust/src/core/clock.rs",
-      "sha256": "2f1229ce501feb1b7ba2061fbf712a915562fd563ad03299a806c16fc52f8008",
+      "sha256": "d72c550d14e1ab7b4d549a2969d5f396e3cf125ccadba8b5328afc728d01f93d",
       "generated": true
     },
     {
       "path": "rust/src/core/config.rs",
-      "sha256": "ef86b56dcc3997613d4b93ca1a86265398e4eb987126773d4ff1f6bda1c7acbd",
+      "sha256": "765769c86755b68973411c78c84f492835df2bc53aa21add50ea88fbb96d94ee",
       "generated": true
     },
     {
       "path": "rust/src/core/env.rs",
-      "sha256": "63fbe6d9849a1143a1c9f263fdeb9b7df305d70fbca109dc05a1f899e63593be",
+      "sha256": "368c252d9d33c5a9a04754e57ed406dd6d9072a760bdf8ebf813cebbdde87a29",
       "generated": true
     },
     {
       "path": "rust/src/core/error.rs",
-      "sha256": "44ecdf7a5c036f77c8f0f20cff1074cdf4bab522195141e2ef04bb203435f5f6",
+      "sha256": "4d286357ada66dfb0169ecb414183e63c6eef3786f2726ba6b1797a326785952",
       "generated": true
     },
     {
       "path": "rust/src/core/health.rs",
-      "sha256": "c57c0d6b01d553066226e6047bb434ac41d2503a615ec27b7a734e2b41b74fdd",
+      "sha256": "aaf6371e568820f4c0ec4e728bcaf9bbf04e4ce9d2bceba104a469f58fdb7aaa",
       "generated": true
     },
     {
       "path": "rust/src/core/hooks.rs",
-      "sha256": "33bc8a3f1c29c90b7ab83323318fd74b9e35ef09777788e2046bfd7b4557b42b",
+      "sha256": "c2544e4412bff38e722b521e0ed170c3808ba58ed460fd409c24a54264bb9088",
       "generated": true
     },
     {
       "path": "rust/src/core/lifecycle.rs",
-      "sha256": "4167e05a84684966cfdab2f0434aee116b5826338ef5ecc44712f26ba7a16302",
+      "sha256": "948526551a8bbe18709c89b3ac7ed048e5c3e3eb89b25f2aa7ad08b869db3369",
       "generated": true
     },
     {
       "path": "rust/src/core/mod.rs",
-      "sha256": "d67f070b9727e003ca56ce16560d7c43d5a661ec0888e1fc3e2e308f8ed2925d",
+      "sha256": "f7c21d16ff0905230a57035c6123d0be452d12738dc5104db5faa82170569303",
       "generated": true
     },
     {
       "path": "rust/src/core/poll.rs",
-      "sha256": "187f9ee5bc150336d7b5802b301a8f04ff01d32806f574225a9d7f7ca160ca4d",
+      "sha256": "a4516d40413ccf6bb0784c9d0484011358d5ae4335f05a541ebdd4148ac96dc1",
       "generated": true
     },
     {
       "path": "rust/src/core/redact.rs",
-      "sha256": "797b465f26309874128501b4397c165fa856b820111d0d74cbec73b100ce63fe",
+      "sha256": "82fcc53a0fa3ac8d69acafda8a3eec1c6688160dbdf3ecd4ef9bd7b057f59834",
       "generated": true
     },
     {
       "path": "rust/src/core/retry.rs",
-      "sha256": "d5fbedd4cdb989b92e6af66ed82b6540cccc82ca7866e4fb5a31c1159822f05b",
+      "sha256": "6d7689414b30831b2bb3081feca72011a05e02f52d33d6b6ca877ef28c65c9b1",
       "generated": true
     },
     {
       "path": "rust/src/core/secret.rs",
-      "sha256": "9e3dc5f03734cbead1114da6a74c9ab218ed342e0079c17536f956a31f7277a5",
+      "sha256": "2de9d3ed4a33b587d822eab4246f9e29ce1219f8ba847215c17da4f0e2c2710a",
       "generated": true
     },
     {
       "path": "rust/src/core/transport.rs",
-      "sha256": "aaa37e8408f3f48ffc9d993d52aeb99b22ad2a52a1eeaffcca941a7873dc6f6c",
+      "sha256": "d0fbcd5065847c88e887cbf96e7c56f1e71f0e3580a1557362d78c086b1aef6b",
       "generated": true
     },
     {
@@ -1621,83 +1641,88 @@
     },
     {
       "path": "rust/src/logging/batch.rs",
-      "sha256": "62fbafc773a4b413b18b08e86b09ffc78c89cf8a05c7218c281b55274fd43776",
+      "sha256": "e4cd9aef1f4871f5450f392ef2c2df4c0742f33a8d83b81fe71a8dc0887dc06a",
       "generated": true
     },
     {
       "path": "rust/src/logging/bridge.rs",
-      "sha256": "87791354d1ce502f672a586fe3f2c08ce46da1951cea413c08c9d5dfbe34153c",
+      "sha256": "d1e6685957fe231eeab0cb02664381715bc9588fa3912c11fc44827e87277039",
       "generated": true
     },
     {
       "path": "rust/src/logging/client.rs",
-      "sha256": "2aacaf5b757f79320e95c3b297ebcf0251f3a3005889353b328fe4c590692357",
+      "sha256": "7b2f549078efd18527bc129ed3abbf7b986af3a82ef7a5af35ce0a8998bc1ce4",
       "generated": true
     },
     {
       "path": "rust/src/logging/exporter.rs",
-      "sha256": "7c830059585b9f57e446b2fe87fe7277642d575cc6253e5eec03448cf7aea61a",
+      "sha256": "435492a439d8b7f80f95b1aebe11ae81de9080129b8dabf66440a25f11d9e6aa",
       "generated": true
     },
     {
       "path": "rust/src/logging/layer.rs",
-      "sha256": "75a0255de0ee259392e977d799bdaa0cd860a07124315e4c3e22ec1d1630e646",
+      "sha256": "b7a1d8df3b602d5eded9b7451d05f9ff5a76deaaf8683fd3e24965e89cf58fc6",
       "generated": true
     },
     {
       "path": "rust/src/logging/mod.rs",
-      "sha256": "eb8aedf82fbcbcfd536a591c24faf6009168f9b8c8a289ce5bf807a1c1152cf9",
+      "sha256": "5758752836d11cb51618c202b2aec9ddfa2aa8462dd91091a429540d41094ce3",
       "generated": true
     },
     {
       "path": "rust/src/logging/query.rs",
-      "sha256": "b5c00e667721fbc071007236282b5f8cf240bf0fc51589a2bc6c47773f06476a",
+      "sha256": "d06ce455855d09d7fa863f93287b10905b03e616fcd5a03c0aa806aafcc93e97",
       "generated": true
     },
     {
       "path": "rust/src/logging/record.rs",
-      "sha256": "5046b79c94dc560e42d46b835ae3f7b1ed5c6f4cd761bca7af2684628fb8c77c",
+      "sha256": "b2265a02f00b331bc92c3447fc5f918110e897463c4f19ed00754a4c6a5b0016",
       "generated": true
     },
     {
       "path": "rust/src/logging/redaction.rs",
-      "sha256": "3b3dbf5cebc638d648553eaf0ef73bb0cf0516d690e0dd289d2fcbb10c729600",
+      "sha256": "df6f7666cde6c0a0bd0deecfdb18ba03b7f448704f90ee22f9e2ec314e013290",
       "generated": true
     },
     {
       "path": "rust/src/testing/core_ops.rs",
-      "sha256": "b74a680eacac8302e6d9458ce149fee366fc1272eb358feece32e48fccbd9c56",
+      "sha256": "0506b59c081a25e42794ce75c17ffa4ff1bb3557f85aee3c7a0f64f68daae07a",
       "generated": true
     },
     {
       "path": "rust/src/testing/expect.rs",
-      "sha256": "0b5505449b748e9e3d286bcf841568f8bf5db7194aee55629a70ed81ff6955eb",
+      "sha256": "0501407f045c3b1ee7d0a348074df145bbea6f193bf49b460513862d4e6ecbd8",
       "generated": true
     },
     {
       "path": "rust/src/testing/logging.rs",
-      "sha256": "a4608b99434f96b129adf9b1d6977062306a009e69859d73d3506d6d83016781",
+      "sha256": "586aeac6db77fb11791a2606e23cac2ea686713d3668260e121564b8a44bdcaa",
       "generated": true
     },
     {
       "path": "rust/src/testing/logging_conformance.rs",
-      "sha256": "b5a263be5a5e38f9151f828eafaa33023531c46680ecfbd56fbd0563351a43eb",
+      "sha256": "9f867a5aa5bd3effc8cb85203b9f62c9c8c11ffe2ebd8ea3a0c50a22dba27a04",
       "generated": true
     },
     {
       "path": "rust/src/testing/logging_memory.rs",
-      "sha256": "e9b3b47392cb81abde65d8386373ff0af2f0b03c6723e27b7312832b504b0092",
+      "sha256": "a7d484cd25a92daa743c384cafa9a5628310644f2b3088c1e9580e9603fd29cc",
       "generated": true
     },
     {
       "path": "rust/src/testing/mod.rs",
-      "sha256": "f61d52c8063e6e4975ee9e9574d2695de90f82972379a7a3600d116f9b45db24",
+      "sha256": "054fd326dce50ba76a09cb78a436ef2cd603e44d99abcc07c46815946d56625e",
       "generated": true
     },
     {
       "path": "rust/src/testing/runner.rs",
-      "sha256": "61fa3976f7cac0bf4c8fa1e61a865816644d9053dbcc8e71e53e037ffa106655",
+      "sha256": "69d0ea9440c51bfaa1ef2446fc15bf39fde6cc9631db957e1e572a8636e0b0f4",
       "generated": true
+    },
+    {
+      "path": "rust/src/testing/service.rs",
+      "sha256": "98cc411a72db0c0cc977eaf57456936cdfbe3e1acc5878fab8c37c270d09a046",
+      "generated": false
     },
     {
       "path": "rust/tests/blocking.rs",
@@ -1711,7 +1736,7 @@
     },
     {
       "path": "rust/tests/common/mod.rs",
-      "sha256": "04a3183aa1d7994586458f7fb9358ab90b0601ace7501cd8d07f2fbbde1fec2c",
+      "sha256": "83ef48de38584ba6af62647d13f3a8e6f2ceeb247ab2ee01abd4e4c0c328b065",
       "generated": true
     },
     {
@@ -1721,17 +1746,17 @@
     },
     {
       "path": "rust/tests/core_logging.rs",
-      "sha256": "03fcf8d838063e031ec1c2613c3a463fb916f9d251c7974d1c950acf76f06f60",
+      "sha256": "306b9b31fa1584eb3ec16845688a5b487affe32034c219a12cb881278cd96369",
       "generated": true
     },
     {
       "path": "rust/tests/core_transport.rs",
-      "sha256": "5d498f43f5786aae9c8e9a61e226fbeead4d4ad57ecbfed609962a0872d285b4",
+      "sha256": "9775ffe21f1ff20a4105da2c3e32b5ca18072039a4d8379f0eaa7c7fff2915d7",
       "generated": true
     },
     {
       "path": "rust/tests/core_units.rs",
-      "sha256": "85f649c453814d3f386cacd9b95dd60b8470e9ffc864ad126e4e88ecd1830bf3",
+      "sha256": "4dd368cf07103de50d87f9f8344ba20b461940e79c6e9ca2f4ed2a1b0d626d35",
       "generated": true
     },
     {
@@ -1751,32 +1776,32 @@
     },
     {
       "path": "rust/tests/logging_adapters.rs",
-      "sha256": "8a38b7eedbcc7ef1774dd106853f04e154fd4f0c8c0115f0dfb13f7a32ce15f4",
+      "sha256": "e1750e9e6f090e32a08b377109ee52e8d348f1db36241586630a44b1bfa00bff",
       "generated": true
     },
     {
       "path": "rust/tests/logging_batch.rs",
-      "sha256": "0526ca57372733d37c6826e7eea0d40bab0dd7499aa65d4e16d6dc1fdf1ef417",
+      "sha256": "58a8efe047db96b01aa5afdae7a3ba352eb447a934fbf0c477e16efa3d91cb68",
       "generated": true
     },
     {
       "path": "rust/tests/logging_client.rs",
-      "sha256": "f3ffbfb8fa9370fb28e7cf9ca8bec17ff8b812a5686bc4583a5d40a9ed675c62",
+      "sha256": "069eeaa3f9693ae7a21878a67d6c690c5485cf02287fd58b6423858b03bd3d71",
       "generated": true
     },
     {
       "path": "rust/tests/logging_conformance.rs",
-      "sha256": "ca5c09181bacc862ebb7f079a62e8d623205e2aea80c470347cc702b8443e4c8",
+      "sha256": "1d5f54ba6fdf09ded0480d28ee123d123a86af433a876ab67f8f3f319c7264cd",
       "generated": true
     },
     {
       "path": "rust/tests/logging_query.rs",
-      "sha256": "d09f5148182e6e333a6c568d1b4aa85dfc24be686ef26bffe183e3d4cb4cd3f9",
+      "sha256": "2f8f12c398062880e860f447077fd20ba6606aa9408011fa9797f27eb2d8c8c1",
       "generated": true
     },
     {
       "path": "rust/tests/logging_records.rs",
-      "sha256": "e37160f6a4a705300ff0e3559de978ce060a29503759e4485046f7b75728fe56",
+      "sha256": "4ea57a341ab5dfa89faadffa11f1d66c773da95a602b645b46b2d7e734060c93",
       "generated": true
     },
     {
@@ -1871,62 +1896,62 @@
     },
     {
       "path": "typescript/src/core/abort.ts",
-      "sha256": "34f1f2093daa6c819c617b8ad9c103bdb0031e5ce4a390015518500e8b9a2c7f",
+      "sha256": "bd52044c46111923e35eab43adb10d1af8bfd6ada8b59488a98f9e0c4ce65559",
       "generated": true
     },
     {
       "path": "typescript/src/core/env.ts",
-      "sha256": "1c3a42c80b5a5baf50f2d64636444566aa3748b9d3130ba88c640b6914d2b09b",
+      "sha256": "2ba41e166baa9dd6bcb0c8ea8c2553d8cf5dcd2ec9aecb8a24830abb21e98911",
       "generated": true
     },
     {
       "path": "typescript/src/core/errors.ts",
-      "sha256": "c0a2bf0852cf60ce1f614d607cf2e18c359e76ba36421c496a3be11979845ceb",
+      "sha256": "586871961c0430db300c8fa3bae070917d894ab701fb549a97a2dab6d08335af",
       "generated": true
     },
     {
       "path": "typescript/src/core/health.ts",
-      "sha256": "9b247ca5eb9e4a30a2f4dd0d219e752ba0c71f07bc503dd08d2c37d6caffc391",
+      "sha256": "8af7883679f21eac6a08003b0d98890f3cbab1dff4220f7693fd0f7663c56915",
       "generated": true
     },
     {
       "path": "typescript/src/core/hooks.ts",
-      "sha256": "51df6f6089e0ed54e1b292557d52d11bdb424a403a69b08e6b56a87d0d943ced",
+      "sha256": "da16cc3d46c329605f353d90a68e47b1b0aeda584890de431e3572c78e676c18",
       "generated": true
     },
     {
       "path": "typescript/src/core/index.ts",
-      "sha256": "30b30001828e2258324f98bfb088b9ca04df9248bcc688f19f74f266ee73b1ce",
+      "sha256": "7e0056f1ba67fd749725bded7c9e29f357d1d7237781083598cb1f7bafe732ec",
       "generated": true
     },
     {
       "path": "typescript/src/core/options.ts",
-      "sha256": "2583818bbe16a3c3357ab5f75a88c46e5fa6c0951e701e178c41a00e2f30ca16",
+      "sha256": "1b008c3ea2ed9e6fbb8866f68d625a016a807e135f7529e13159d3faa40bb71f",
       "generated": true
     },
     {
       "path": "typescript/src/core/poll.ts",
-      "sha256": "57d00dd9588b4ebed3a7abbeafe2ad39309342a84ef6e1c770408db1180bb954",
+      "sha256": "824acbd9e851edac1ad39905022d4f4122893b133e07917c173a6ff5ae17eab4",
       "generated": true
     },
     {
       "path": "typescript/src/core/redaction.ts",
-      "sha256": "c85a186230297d7cb465d233d09dc082952ca445c1f08658f39afaf57f1348e8",
+      "sha256": "ea2514074dd7a1dbd5d58eeb22f2fd97c52f6efa416ebf6552ad0c429154134c",
       "generated": true
     },
     {
       "path": "typescript/src/core/retry.ts",
-      "sha256": "ff9836735d248ef415430d5b554008ceac9f3e95e0667eefc929c5bed87fd9f1",
+      "sha256": "50c5ff6e93a905a006611fb2b740545e2078b752914bff9f438e0df9dd67e01a",
       "generated": true
     },
     {
       "path": "typescript/src/core/transport.ts",
-      "sha256": "238ad6f6a91216063faf0035cb2c4cc90caba75bb4750e42eb7c7af01ca0bfc8",
+      "sha256": "083d428cc79c4f4e27e22788eef7bdbe69a1035310604cf0792b49783feabab8",
       "generated": true
     },
     {
       "path": "typescript/src/core/version.ts",
-      "sha256": "2264346de33a88973a9655d15ad5cbf9aeb926281b1b691228c0d51d1a3041bd",
+      "sha256": "ddc81794643f31a00cce0744f14b152acbe302d18b3319fd7e82eaa8a8368cf0",
       "generated": true
     },
     {
@@ -1936,87 +1961,92 @@
     },
     {
       "path": "typescript/src/logging/batch.ts",
-      "sha256": "360e8d7af84c7763f47dbcc36097bf4736ce3b4f51eb391ed271e0eb3ca5c2de",
+      "sha256": "58c1e9a87d1f5ce5e5f4d5ed6b0974cbedc3acb26814b00e0c3241ca05c9759f",
       "generated": true
     },
     {
       "path": "typescript/src/logging/client.ts",
-      "sha256": "8f540570c100a1bf44ac0052c42b6b5153973e44d4e50c8c3c93dc64ce2351fb",
+      "sha256": "cd4421968cf6f42be4432d62db711d4080c0a2399ac4ccb34683c3ebcc6761eb",
       "generated": true
     },
     {
       "path": "typescript/src/logging/index.ts",
-      "sha256": "fb9ea419497b0a1a80c58267f6d4e084dce5dbaa4639c110069089f8f5dea200",
+      "sha256": "f70f76da73c732a91d13baac3c3a45d5803286cd716fcb1decb60503522c59be",
       "generated": true
     },
     {
       "path": "typescript/src/logging/json.ts",
-      "sha256": "2c52a478bcfb0c781c4a14372edf2e9f866f808175c58b64a06e8a609db1331b",
+      "sha256": "5e4cdca1cb897d166b275e3dd50efaa95df4a2fa86ed3004de424b1295803c5b",
       "generated": true
     },
     {
       "path": "typescript/src/logging/logger.ts",
-      "sha256": "7a240355c8609028ca5d473bdf583f9a51dbaf43b3598e7c939c13f5ecbb057a",
+      "sha256": "8df988f121f48a3482741df38ac4395f2a33fd5a8bb17e9f07c5a25be5f36c13",
       "generated": true
     },
     {
       "path": "typescript/src/logging/pino.ts",
-      "sha256": "63cccb7a623b476bf9eea54965e8c0576b59f16c79a6a3b79eb71f8ba1580020",
+      "sha256": "d77779227619ec5f707fcb02cfb28fe9c4a7b31c3190916ba74c3a4c4ca7844d",
       "generated": true
     },
     {
       "path": "typescript/src/logging/query.ts",
-      "sha256": "4dfdf6282b69cfae84cc2d6f439ceccbcd2b6bee28a31d8eeeb363b0b5e52dc1",
+      "sha256": "aa433e07b93868ad3d2140404ef427c16d764423a3f3c513a0492402a3e9d64c",
       "generated": true
     },
     {
       "path": "typescript/src/logging/redaction.ts",
-      "sha256": "2a61bbf37f26feea9bb1bf79fc390894fa72c022400db149dc995b355e006477",
+      "sha256": "e3d698dc2817c8c0d351e1b640b7b9a19910155a31932c90b5d3cc17a114678e",
       "generated": true
     },
     {
       "path": "typescript/src/logging/types.ts",
-      "sha256": "d655a77e160dd58f8e47b7b3db55c264ffefa63a6e6b2828d3f28956ff07cda4",
+      "sha256": "f904d5e38541c746286e2522d66619f79af9935e48f811bd6de3805a9ef885a9",
       "generated": true
     },
     {
       "path": "typescript/src/logging/winston.ts",
-      "sha256": "0bcc4cff6d167674d0afce40b4f989aaa4d45c39dec0507c31cc57e6dd413170",
+      "sha256": "b6df358d6633fec7d33f1e82a764634f3d1416b0280f231b14470838ab895168",
       "generated": true
     },
     {
+      "path": "typescript/src/testing-entry.ts",
+      "sha256": "f14c4d28c0ec1f3802577ff2f94bae39cac23808bc99b1f08727f187a126fb3f",
+      "generated": false
+    },
+    {
       "path": "typescript/src/testing/core-ops.ts",
-      "sha256": "b5dba2e8a462d60e38b8e4f615c546f3d6da52052a2a3844bb11f932aa9ae841",
+      "sha256": "000c54f226ab60b007179d52e5ad506f64a10bda5a1d8e529caf7fc57d415d6c",
       "generated": true
     },
     {
       "path": "typescript/src/testing/expect.ts",
-      "sha256": "adb25caaedb93ec5516ebb890d615073f86c8e469c7ff1c371668716aeb304ae",
+      "sha256": "29cbdcdeb462d70d790f5303c7401dd56f12cd49ae50c91ac0ff6f0eb6110298",
       "generated": true
     },
     {
       "path": "typescript/src/testing/index.ts",
-      "sha256": "4472bfddf7e8d5339899a67a9f2a5596f09cbf8854d318b4070c3a55a75316a1",
+      "sha256": "832e2e18664d5749b613c41ba36c7b2c78fd0957c13bf44fcb11662dc3630050",
       "generated": true
     },
     {
       "path": "typescript/src/testing/logging-ops.ts",
-      "sha256": "c08465f2ee737bb073b9f8a4473e8e7b5d1d16e82bba006a1f0928902e074cd2",
+      "sha256": "c55027de5c4811a502fc4f909cf3fb743d4601188cf28ddd93ff2772ce111509",
       "generated": true
     },
     {
       "path": "typescript/src/testing/memory-logs.ts",
-      "sha256": "8b0cf72acd368bc91c089b4832a16f61b572b125da5c10b80c5a43fe67ac1718",
+      "sha256": "f66a3fe992f8c3928bcb363d9b64c1bc80033b3b9b2e3293d3c367d1da21ac1d",
       "generated": true
     },
     {
       "path": "typescript/src/testing/ops.ts",
-      "sha256": "73624f080826f058db279fb3e7afb7c086d121989b68e491adf5dda68c9ddf3e",
+      "sha256": "97e699847f735860849e9a2d84d891ca3a3dcdc5798f52a114a4cdfa1261fc16",
       "generated": true
     },
     {
       "path": "typescript/src/testing/runner.ts",
-      "sha256": "05cb204fe5751e7f6e12be98ce97ecf5a035c846a9efc230c25334df86e31698",
+      "sha256": "8e5ce11fca6752f4d76b3d2054f4bd1be679d4be238ffa4a24949a10e8ba0c2b",
       "generated": true
     },
     {
@@ -2071,47 +2101,47 @@
     },
     {
       "path": "typescript/test/logging/adapters.test.ts",
-      "sha256": "ed91d8faecd180193ba4d7cc22b681ac9e7dbc0e826895c099e576831a176c27",
+      "sha256": "db73b8546bdd299b54d2ebc48d8fb0120e0293634c408ec04f78cbf393425ee7",
       "generated": true
     },
     {
       "path": "typescript/test/logging/batch.test.ts",
-      "sha256": "71155527f80b60197071cd0682a54db399626d8225b8f598af41d5c5546e4ae5",
+      "sha256": "1cd399b8001bcfbbba7ec74f325dcb17e10b184a746fba31d3dc12482bef5dda",
       "generated": true
     },
     {
       "path": "typescript/test/logging/client.test.ts",
-      "sha256": "f0713a1fcbcc627e711105dcc7c717d7fcbd3cc627ecbac2b1406468ab4b74fd",
+      "sha256": "9e9eda16693ffe606de4245fc0b428475702c078c167ea676a8526734bb22f95",
       "generated": true
     },
     {
       "path": "typescript/test/logging/conformance.test.ts",
-      "sha256": "3952f53b9843129a746e4e31ed39ada60dbf0000d7bbe84c82edbdc633b9e16b",
+      "sha256": "e540ec054a1569cfbd5635412afda3879c773fbbe0d0b3977add9b88d3c58e14",
       "generated": true
     },
     {
       "path": "typescript/test/logging/memory-logs.test.ts",
-      "sha256": "7aa31a9ff47a7a0c0d2a68995da0f69d1ae09bcef0805b8f53a19da05c02ef2e",
+      "sha256": "ee37573c6041cb37bf384e22d598438a60ae2aac9ed5eff83926e00813f00e8a",
       "generated": true
     },
     {
       "path": "typescript/test/logging/query.test.ts",
-      "sha256": "0f1e76461f3e6977b680d61cf3986bf02ea9bcf1b3142840df18e03e61659d25",
+      "sha256": "2a8c2ed9d93034b21f229d05cadb0c811dcdb863854e0c1f742e9c964c281444",
       "generated": true
     },
     {
       "path": "typescript/test/logging/redaction.test.ts",
-      "sha256": "8c44fb0ad71fb11c8d58442f424449f6f9cfc864458446c0c7119a1b861464d8",
+      "sha256": "dd34dddee3c96aa605509d2f9604c784999e128fdcd3df68ae1230efa2903ab2",
       "generated": true
     },
     {
       "path": "typescript/test/logging/schema.test.ts",
-      "sha256": "3638676d8d82a323eebbb2481b8706f098536799b0780f07a771cdc83821d5a9",
+      "sha256": "888d5dc48a43bd3a901611c25671d1b5ff58e2e2a886cf2248061f671799c8ec",
       "generated": true
     },
     {
       "path": "typescript/test/logging/types-json.test.ts",
-      "sha256": "664eb7144c99bae123551fef2db367ff82e16a6426b334253f7bb8cd280500eb",
+      "sha256": "095208175af817466d81164bf9ef3b34ff77fe0bca8cb21924cad95547a05f7d",
       "generated": true
     },
     {

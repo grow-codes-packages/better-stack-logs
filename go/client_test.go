@@ -202,7 +202,7 @@ func TestClientIngestOnly(t *testing.T) {
 	})
 
 	t.Run("health unhealthy 5xx", func(t *testing.T) {
-		ts500 := newTestServer(t, status(http.StatusBadGateway))
+		ts500 := newTestServer(t, statusHandler(http.StatusBadGateway))
 		c := newTestClient(t, ts500.URL, nil)
 		if hs, err := c.Health(t.Context()); err != nil || hs.Healthy || hs.Status != "unhealthy" {
 			t.Fatalf("health %+v %v", hs, err)
