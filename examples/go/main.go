@@ -1,13 +1,20 @@
-// Command example shows the basics of the Better Stack Logs Go SDK: configuration
-// from the environment, health, an authenticated ping and error handling.
+// Command example shows the Better Stack Logs Go SDK: configuration from the
+// environment, health and ping, sending logs through the batching LogClient (with
+// the Logger facade and log/slog), reading them back with the SQL query API
+// (SearchLogs, Query with parameters, WaitForLog) and error handling.
 //
-//	GROW_BETTER_STACK_LOGS_URL=http://127.0.0.1:8080 GROW_BETTER_STACK_LOGS_TOKEN=... go run .
+//	GROW_BETTER_STACK_LOGS_URL=https://s1234.eu-nbg-2.betterstackdata.com \
+//	GROW_BETTER_STACK_LOGS_SOURCE_TOKEN=... \
+//	GROW_BETTER_STACK_LOGS_QUERY_URL=https://eu-nbg-2-connect.betterstackdata.com \
+//	GROW_BETTER_STACK_LOGS_QUERY_USERNAME=... GROW_BETTER_STACK_LOGS_QUERY_PASSWORD=... \
+//	GROW_BETTER_STACK_LOGS_SOURCE_TABLE=t1234_myapp go run .
 package main
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"os"
 	"time"
@@ -17,58 +24,78 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		fmt.Fprintln(os.Stderr, "error:", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
 
 func run() error {
-	cfg, err := betterstack.ConfigFromEnv()
-	if err != nil {
-		return err // CONFIG error naming the variable, never its value
-	}
-	cfg.Logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelWarn}))
-	cfg.Hooks = &betterstack.Hooks{
-		OnError: func(info betterstack.ErrorInfo) {
-			if info.WillRetry {
-				fmt.Fprintf(os.Stderr, "retrying %s %s (attempt %d)\n", info.Method, info.URL, info.Attempt)
-			}
-		},
-	}
-	fmt.Println("config:", cfg) // credentials print as [REDACTED]
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
 
-	client, err := betterstack.NewClient(cfg)
+	client, err := betterstack.NewClientFromEnv()
 	if err != nil {
-		return err
+		return err // a CONFIG error names the missing variable, never a value
 	}
 	defer func() { _ = client.Close() }()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	health, err := client.Health(ctx)
+	hs, err := client.Health(ctx)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("health: healthy=%t status=%s\n", health.Healthy, health.Status)
+	fmt.Printf("health: %s (healthy=%t)\n", hs.Status, hs.Healthy)
+	if d, err := client.Ping(ctx); err != nil {
+		if errors.Is(err, betterstack.ErrAuthentication) {
+			return fmt.Errorf("check the source token / query credentials: %w", err)
+		}
+		return err
+	} else {
+		fmt.Printf("ping: %s\n", d.Round(time.Millisecond))
+	}
 
-	latency, err := client.Ping(ctx)
-	switch {
-	case errors.Is(err, betterstack.ErrAuthentication):
-		return fmt.Errorf("check GROW_BETTER_STACK_LOGS_TOKEN: %w", err)
-	case err != nil:
+	// Send logs (batched, gzip, redaction of password/token/... attributes).
+	logs, err := client.NewLogClient(betterstack.LogClientOptions{
+		Resource: map[string]betterstack.AttrValue{"service.name": "example-go", "deployment.environment": "dev"},
+	})
+	if err != nil {
 		return err
 	}
-	fmt.Println("ping:", latency)
-
-	version, err := client.ServerVersion(ctx)
-	switch {
-	case errors.Is(err, betterstack.ErrUnsupported):
-		fmt.Println("server version: not exposed")
-	case err != nil:
+	run := fmt.Sprintf("example-%d", time.Now().UnixNano())
+	logs.Logger("checkout", nil).Info(ctx, "order placed "+run, "order_id", 42, "password", "never-sent")
+	slog.New(betterstack.NewSlogHandler(logs, nil)).Warn("slow payment "+run, "ms", 950)
+	if err := logs.Flush(ctx); err != nil {
 		return err
-	default:
-		fmt.Println("server version:", version)
 	}
+	fmt.Printf("sent: %+v\n", logs.Stats())
+
+	q := client.Query()
+	if q == nil {
+		fmt.Println("no query credentials: skipping the read-back")
+		return nil
+	}
+	rec, err := q.WaitForLog(ctx, run, betterstack.WaitForLogOptions{Timeout: 60 * time.Second, Interval: 2 * time.Second})
+	if err != nil {
+		return err
+	}
+	fmt.Printf("found: %s [%s]\n", rec.Body, rec.SeverityText)
+
+	page, err := q.SearchLogs(ctx, betterstack.SearchLogsOptions{Contains: run, Start: time.Now().Add(-time.Hour), Limit: 10})
+	if err != nil {
+		return err
+	}
+	for _, r := range page.Records {
+		fmt.Printf("row: %s %s %s\n", r.Timestamp.Format(time.RFC3339Nano), r.SeverityText, r.Body)
+	}
+
+	table := client.Config().SourceTable
+	if table == "" {
+		table = os.Getenv("BETTERSTACK_SOURCE_TABLE")
+	}
+	counts, err := q.Query(ctx,
+		"SELECT count() AS c FROM remote({table:Identifier}) WHERE position(raw, {needle:String}) > 0",
+		map[string]any{"table": table + "_logs", "needle": run})
+	if err != nil {
+		return err
+	}
+	fmt.Printf("count: %v\n", counts[0]["c"])
 	return nil
 }

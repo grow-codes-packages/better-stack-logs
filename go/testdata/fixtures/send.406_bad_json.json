@@ -1,0 +1,23 @@
+{
+  "fixture": "send.406_bad_json",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/",
+    "headers": {
+      "content-type": "application/json",
+      "authorization": "<redacted>"
+    },
+    "body": "{\"message\": "
+  },
+  "response": {
+    "status": 406,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "content-length": "28"
+    },
+    "body": "Couldn't parse JSON content."
+  }
+}

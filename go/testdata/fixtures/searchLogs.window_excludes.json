@@ -1,0 +1,28 @@
+{
+  "fixture": "searchLogs.window_excludes",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": null,
+  "request": {
+    "method": "POST",
+    "host": "query",
+    "path": "/",
+    "headers": {
+      "authorization": "<redacted>",
+      "content-type": "text/plain"
+    },
+    "body": "SELECT dt, raw FROM (SELECT dt, raw FROM remote(t1_grow_sdk_logs) UNION ALL SELECT dt, raw FROM s3Cluster(primary, t1_grow_sdk_s3) WHERE _row_type = 1) WHERE dt BETWEEN toDateTime64('2023-11-14 22:13:21', 6) AND toDateTime64('2023-11-14 22:13:21', 6) AND position(raw, 'needle-prep-208cdca json-array') > 0 ORDER BY dt ASC LIMIT 100 FORMAT JSONEachRow"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/x-ndjson; charset=UTF-8",
+      "content-length": "113",
+      "x-clickhouse-format": "JSONEachRow",
+      "x-clickhouse-summary": "{\"read_rows\": \"1\", \"result_rows\": \"1\"}"
+    },
+    "body": {
+      "dt": "2023-11-14 22:13:21.000000",
+      "raw": "{\"message\":\"needle-prep-208cdca json-array 1\",\"dt\":1700000001}"
+    }
+  }
+}

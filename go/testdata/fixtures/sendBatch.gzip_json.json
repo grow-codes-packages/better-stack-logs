@@ -1,0 +1,26 @@
+{
+  "fixture": "sendBatch.gzip_json",
+  "server": "sdk-kit betterstack-stub (contract stub, NOT the real Better Stack service)",
+  "note": "gzip is used by Better Stack's Vector/OTel configs; raw HTTP docs do not list it",
+  "request": {
+    "method": "POST",
+    "host": "ingest",
+    "path": "/",
+    "headers": {
+      "content-type": "application/json",
+      "authorization": "<redacted>",
+      "content-encoding": "gzip"
+    },
+    "body": {
+      "base64": "H4sIABMM/moC/4uuVspNLS5OTE9VslJQyktNTclJ1S0oSi3QNTKwSE5JTlRIr8osUDBQ0lFQSikBqTEyMDLWNTTSNTYMMTS2MjG1MrXUMzQyNjE1i1Kq1VEgzjxDIs2LBQB2IRploAAAAA==",
+      "bytes": 106
+    }
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "content-length": "0"
+    },
+    "body": null
+  }
+}
