@@ -1,6 +1,6 @@
 {
   "name": "@grow-codes/better-stack-logs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Grow Codes SDK for Better Stack Logs (TypeScript)",
   "keywords": [
     "better-stack-logs",
