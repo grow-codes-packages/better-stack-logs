@@ -513,6 +513,20 @@ No host ports are published and every run uses its own Compose project, so runs 
 stack is always removed afterwards (`docker compose down -v`). Unit tests need no Docker:
 `make test` or `make coverage`.
 
+Live checks against the real Better Stack service (ingest through every path, read back over
+SQL with bound parameters, health and ping on both hosts) live in `live/` and run weekly in
+`.github/workflows/live.yml` once the six `BETTERSTACK_*` secrets exist. Run them locally with
+the same variables:
+
+```sh
+export BETTERSTACK_INGEST_HOST=… BETTERSTACK_SOURCE_TOKEN=… BETTERSTACK_QUERY_HOST=…
+export BETTERSTACK_QUERY_USER=… BETTERSTACK_QUERY_PASSWORD=… BETTERSTACK_SOURCE_TABLE=…
+make -C live live
+```
+
+Without them the suite prints `skipped: no credentials` and exits 0. Details:
+[docs/compatibility.md](docs/compatibility.md#live-checks).
+
 ## Compatibility
 
 | | TypeScript | Rust | Go | Python | Java |

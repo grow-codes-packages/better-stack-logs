@@ -28,15 +28,55 @@ optional live Better Stack source`): a Python standard-library server with an in
 public documentation (see its `README.md`). The stub is test-only and is not shipped in any
 package.
 
-!!! warning "Live SaaS checks pending"
-    Nothing in CI runs against the real Better Stack service yet. A release-gate live job (send to
-    a real source, read the rows back through a real SQL connection) waits for owner-approved
-    credentials. Until it runs, these behaviours are taken from the documentation and are
+!!! warning "Live SaaS checks waiting for credentials"
+    Nothing has run against the real Better Stack service yet. The [live checks](#live-checks)
+    (send to a real source, read the rows back through a real SQL connection) run as soon as the
+    owner adds the credentials. Until a green live run, these behaviours are taken from the documentation and are
     unverified against the SaaS: server-side `param_<name>` binding through Better Stack's SQL
     proxy, gzip on the raw ingest endpoint, `GET /ping` on the SQL host, the empty-batch `[]` ping
     (and whether it is billed), the HTTP status of SQL authentication failures (401 vs 403), the
-    precision of `dt` and the ingest-to-query delay (the live job allows 60 s and serialises
-    polling, because the SQL API allows 4 concurrent queries per account).
+    precision of `dt` and the ingest-to-query delay (the live checks allow 5 minutes, print the
+    observed delay and serialise every query, because the SQL API allows 4 concurrent queries per
+    account).
+
+## Live checks
+
+`live/` (service-owned) holds a small Python suite that runs against a real Better Stack source
+and SQL connection, using the package built from `./python`. It covers the behaviours listed
+above as unverified:
+
+- **ingest** of one event with a unique marker per path: raw JSON, NDJSON and MessagePack (gzip,
+  `new_exporter`), OTLP protobuf and OTLP JSON (`new_otlp_exporter`), and the batching log client;
+- **read back**: `wait_for_log` (up to 5 minutes, observed delay printed), `search_logs` until all
+  six paths are found, `search` with 2 records per page and a cursor;
+- **SQL binding**: `query` with bound parameters whose value holds backslashes, double and single
+  quotes and a tab, both echoed (`SELECT {s:String}`) and matched against the stored event
+  (`JSONExtractString(raw, …) = {v:String}`); `count()` returned as a string; `query_raw` with
+  `FORMAT TabSeparated`; a missing table → `NOT_FOUND`;
+- **both hosts**: `health` (`GET /ping` on the SQL host, unauthenticated `GET /` on the ingest
+  host), `ping` (`SELECT count() … WHERE 1 = 0`, and the empty batch `[]`), a wrong source token
+  and a wrong SQL password → `AUTHENTICATION` (the HTTP status is printed, 401 vs 403);
+- `server_version` / `list_labels` → `UNSUPPORTED`, `list_streams` → `[source_table]`.
+
+Every check prints PASS, FAIL, WARN or SKIP; any FAIL fails the run.
+
+| Variable (GitHub organisation secret) | What |
+| - | - |
+| `BETTERSTACK_INGEST_HOST` | the source's ingesting host, e.g. `s1234.eu-nbg-2.betterstackdata.com` (a full `https://` URL also works) |
+| `BETTERSTACK_SOURCE_TOKEN` | the source token |
+| `BETTERSTACK_QUERY_HOST` | the SQL connection host, e.g. `eu-nbg-2-connect.betterstackdata.com` |
+| `BETTERSTACK_QUERY_USER` | the SQL connection user name |
+| `BETTERSTACK_QUERY_PASSWORD` | the SQL connection password |
+| `BETTERSTACK_SOURCE_TABLE` | the source's table name, e.g. `t1234_grow_sdk_live` |
+
+All six are required (`LIVE_TIMEOUT_S`, default 300, changes the wait). The suite maps them to
+the SDK's own names (`BETTERSTACK_INGESTING_HOST`, `BETTERSTACK_QUERY_USERNAME`, …).
+
+- **CI**: `.github/workflows/live.yml` runs on `workflow_dispatch` and every Monday. Without the
+  secrets it ends green with a notice ("Live checks skipped") and runs nothing.
+- **Locally**: export the six variables and run `make -C live live` (creates `live/.venv`,
+  installs `./python`). Without them it prints `skipped: no credentials` and exits 0.
+  `make -C live lint` runs ruff on the suite.
 
 ## What the stub cannot produce
 

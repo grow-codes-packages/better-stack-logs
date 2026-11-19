@@ -155,8 +155,14 @@ Prefer the `make` targets; they are what CI runs.
   (`docs/compatibility.md`).
 - **Licence**: Better Stack is proprietary SaaS. Speak the documented HTTP APIs only; OTLP field
   numbers (Apache-2.0) and ClickHouse protocol/code names are attributed in `NOTICE`.
-- Unit-test-only cases (the stub cannot produce them) and the pending live SaaS checks are listed
-  in `docs/compatibility.md`.
+- Unit-test-only cases (the stub cannot produce them) and the live SaaS checks are listed in
+  `docs/compatibility.md`.
+- **Live checks** (service-owned): `live/live_test.py` (Python, package from `./python`) ingests
+  through every path and reads back over SQL against the real service; `make -C live live`
+  locally, `.github/workflows/live.yml` weekly + on dispatch. Org secrets
+  `BETTERSTACK_INGEST_HOST`, `BETTERSTACK_SOURCE_TOKEN`, `BETTERSTACK_QUERY_HOST`,
+  `BETTERSTACK_QUERY_USER`, `BETTERSTACK_QUERY_PASSWORD`, `BETTERSTACK_SOURCE_TABLE`; without them
+  it skips green.
 
 ## Rules for agents
 
