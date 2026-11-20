@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/grow-codes-packages/better-stack-logs/compare/typescript-v0.1.1...typescript-v0.2.0) (2026-11-20)
+
+
+### Features
+
+* sync better-stack-logs to sdk-kit 0.4.0 (foundation API) ([#16](https://github.com/grow-codes-packages/better-stack-logs/issues/16)) ([70dc82e](https://github.com/grow-codes-packages/better-stack-logs/commit/70dc82eb8fad6bd6175a9579f990497bb7108c2b))
+
 ## [0.1.1](https://github.com/grow-codes-packages/better-stack-logs/compare/typescript-v0.1.0...typescript-v0.1.1) (2026-11-19)
 
 
