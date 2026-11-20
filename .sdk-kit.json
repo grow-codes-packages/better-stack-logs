@@ -450,6 +450,11 @@
       "generated": false
     },
     {
+      "path": "go/AGENTS.md",
+      "sha256": "55c4afed336e8c76e305345a72c2c0b4b6dcd2959c5efd3494da7d6151f123b6",
+      "generated": true
+    },
+    {
       "path": "go/Makefile",
       "sha256": "bf65b064ec0fd997ee0ef3a92b4e142e5457fd3d540bc628ba8caee67fb1a070",
       "generated": true
@@ -512,6 +517,11 @@
     {
       "path": "go/core_hooks.go",
       "sha256": "b44b1c2ec3d54bfd0b01bc95f1b5a6103b5122e8918af792533d663201a98740",
+      "generated": true
+    },
+    {
+      "path": "go/core_key.go",
+      "sha256": "f208b4b1f7c3a571c346e11c85ab677e89af4adf581492d6e8bfe533dc64da98",
       "generated": true
     },
     {
@@ -615,6 +625,31 @@
       "generated": true
     },
     {
+      "path": "go/logging_connect.go",
+      "sha256": "4b6b3406f58d05faa6294f9ef964efcaec44e4753b362af9c77c9bcb55ea7e89",
+      "generated": false
+    },
+    {
+      "path": "go/logging_connect_test.go",
+      "sha256": "0188207ef42f5e1341dc6017ba0a76dcc87d054ac3bdfa32d0bd3645cd3cebe4",
+      "generated": false
+    },
+    {
+      "path": "go/logging_http.go",
+      "sha256": "216d639409c686bd70a74d6da03e8b5a28427406c2764b66599233fbeac5fe82",
+      "generated": true
+    },
+    {
+      "path": "go/logging_init.go",
+      "sha256": "9b1579c66af6a3986ed64aef4ff2641cbb78bccd2460e4c635806935ed80962c",
+      "generated": true
+    },
+    {
+      "path": "go/logging_init_test.go",
+      "sha256": "d44a58a3c2762fcc90611f810f8d960bf8bf86e9d9bff5699f22c34f242a97aa",
+      "generated": true
+    },
+    {
       "path": "go/logging_json.go",
       "sha256": "5b0582d9f39f33da6161137a15f47a338732ed291051003690b36956f2da54bd",
       "generated": true
@@ -686,7 +721,7 @@
     },
     {
       "path": "go/version.go",
-      "sha256": "af1c1f9df94fa5230aa93bb63108e46f897e533fdfad08e3915ea45a52d04757",
+      "sha256": "73c4a5e2ef19c0452eb17ff507c04ce36ca0f294f53668237fbc62314697808a",
       "generated": false
     },
     {
@@ -757,6 +792,11 @@
     {
       "path": "java/src/main/java/codes/grow/packages/betterstack/BetterStackConfig.java",
       "sha256": "c21e12352d747d2b06d18deb2e51dd69880c97627b3c610ced1a57f34877bbb7",
+      "generated": false
+    },
+    {
+      "path": "java/src/main/java/codes/grow/packages/betterstack/LogConnect.java",
+      "sha256": "94950efcf7036d983b0671e9662d6f6b07d9c6c9f6aab88df9d4a1772f998cd9",
       "generated": false
     },
     {
@@ -1025,8 +1065,18 @@
       "generated": true
     },
     {
+      "path": "java/src/main/java/codes/grow/packages/betterstack/logging/LoggingInit.java",
+      "sha256": "534f01adc29a62d5d24b39793b9a47f8af1e0ac6463dee2ba01e89297a4d6956",
+      "generated": true
+    },
+    {
       "path": "java/src/main/java/codes/grow/packages/betterstack/logging/RedactionProcessor.java",
       "sha256": "5a95f461fec0fd5ebeaa9cb4a602cb7601917005e78a8b7da12df94b5304e366",
+      "generated": true
+    },
+    {
+      "path": "java/src/main/java/codes/grow/packages/betterstack/logging/RequestLoggingFilter.java",
+      "sha256": "2b1df2ebf2ead33ff9091a39846367ce762b79db562e4839a4c79fde689f1d61",
       "generated": true
     },
     {
@@ -1150,6 +1200,11 @@
       "generated": true
     },
     {
+      "path": "java/src/main/resources/META-INF/grow/better-stack-logs/AGENTS.md",
+      "sha256": "8827693ddc8f2b805410a7237da0bf9a8a4c294c6465155a2aa43404085e85bc",
+      "generated": true
+    },
+    {
       "path": "java/src/main/resources/codes/grow/packages/betterstack/core/sdk.properties",
       "sha256": "e73fae310f25450bd1d96371dc751ffbc7d5881617123c95c9a9bcc69887cde4",
       "generated": true
@@ -1157,6 +1212,11 @@
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/BetterStackClientTest.java",
       "sha256": "b18821ac72a14c3b7a3fabdcf90d19d4615b10d484c1301425ce1c0f33e7d63c",
+      "generated": false
+    },
+    {
+      "path": "java/src/test/java/codes/grow/packages/betterstack/LogConnectTest.java",
+      "sha256": "034951b690b9475a3f081c440530385c5de3273cb7d91dbd8977e59d02403e0b",
       "generated": false
     },
     {
@@ -1217,6 +1277,11 @@
     {
       "path": "java/src/test/java/codes/grow/packages/betterstack/logging/LoggingConformanceTest.java",
       "sha256": "871ab1eed6e1eb6173cc9d985f7a7bbf7c584fa50b0b94c7ce66f4c26f387a08",
+      "generated": true
+    },
+    {
+      "path": "java/src/test/java/codes/grow/packages/betterstack/logging/LoggingInitTest.java",
+      "sha256": "42f84612df04bccaa296fb7107ea69378af562b6ae3c8b5dd52ff233211e3690",
       "generated": true
     },
     {
@@ -1295,13 +1360,18 @@
       "generated": false
     },
     {
+      "path": "python/src/grow_better_stack_logs/AGENTS.md",
+      "sha256": "025bc023b8cdf35791b4cc34934cad8d06123ba1dc4efe0c09936b6ced6d4ee4",
+      "generated": true
+    },
+    {
       "path": "python/src/grow_better_stack_logs/__init__.py",
       "sha256": "4d7c41bcaa6879e8322176ce2be0a9b2ada09a5c949c6b1ebca045596bc1c563",
       "generated": false
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/__init__.py",
-      "sha256": "643c1abea1386cc61f7a0e5a40c6e909598e89f714116ad78d29c3cc7c5fce25",
+      "sha256": "74c730079d8108c57c04ebfcda4e6e3706855f667ab814319e6019ed9942ceb9",
       "generated": true
     },
     {
@@ -1356,12 +1426,12 @@
     },
     {
       "path": "python/src/grow_better_stack_logs/_core/useragent.py",
-      "sha256": "4128b4dcaca148a37453b54a389ba0ac0c699f7ff423b8607dddfd260dca97c6",
+      "sha256": "36f2068ea9327f2a029eb74f1567b7ae6cb4a9a5aff4d016c01328b2314f464e",
       "generated": true
     },
     {
       "path": "python/src/grow_better_stack_logs/_logging/__init__.py",
-      "sha256": "b234ab3cbc776dd4592b1895c87c9df170a56e888ac6625deb51add907dd24d5",
+      "sha256": "b38b109152c8e56e5ff1ceffffd39f5e02c9f17dee0556d6b3834a7c623fcfa6",
       "generated": true
     },
     {
@@ -1385,6 +1455,16 @@
       "generated": true
     },
     {
+      "path": "python/src/grow_better_stack_logs/_logging/_init.py",
+      "sha256": "c8c4786e71dbde2912277f42dea9e951999dbd5e2fb521d46428ae19c9e09606",
+      "generated": true
+    },
+    {
+      "path": "python/src/grow_better_stack_logs/_logging/_middleware.py",
+      "sha256": "6dba4f4e9cc7ac52cbb391c3c56f84c7b20fa6a8bea174c8f2ebf8ce6abd952a",
+      "generated": true
+    },
+    {
       "path": "python/src/grow_better_stack_logs/_logging/_model.py",
       "sha256": "35d8fd13402f094defa50a034803c42577e0f795ac7e57083f011640119cbd25",
       "generated": true
@@ -1401,7 +1481,7 @@
     },
     {
       "path": "python/src/grow_better_stack_logs/_version.py",
-      "sha256": "a77fa54f51fdf50ebdb72c3a3172a1bc4dbc18af2125c9b46a337b7947d33a8e",
+      "sha256": "7d1c20542e22e5d3055dc6738c8960fc7438ab08ab86dcca8738bc380e42f206",
       "generated": false
     },
     {
@@ -1412,6 +1492,11 @@
     {
       "path": "python/src/grow_better_stack_logs/config.py",
       "sha256": "987c1359ee67e804d63045b8f433e0c80653c584766962b684d356f6d4db88bc",
+      "generated": false
+    },
+    {
+      "path": "python/src/grow_better_stack_logs/logging_connect.py",
+      "sha256": "4e885506c9a42821cb7dc9c5b8bae47ed0cc2154e94e85e6d3df258f8bf5ec68",
       "generated": false
     },
     {
@@ -1505,6 +1590,16 @@
       "generated": true
     },
     {
+      "path": "python/tests/test_logging_connect.py",
+      "sha256": "eefa1fac624906ffb09d1e12785acec185436017a9382e57b50c31a4aa72739c",
+      "generated": false
+    },
+    {
+      "path": "python/tests/test_logging_init.py",
+      "sha256": "a393c0456070735845b4dc90e525803f4abf523312ab5dd05a945c2cddc2726f",
+      "generated": true
+    },
+    {
       "path": "python/tests/test_logging_model.py",
       "sha256": "a4d3c9b9e41d70b96fb6d20af55db54b2aa48921a20c78ea90a7c84aee45bda7",
       "generated": true
@@ -1538,6 +1633,11 @@
       "path": "rust/.gitignore",
       "sha256": "44e19e795df0e74663b0affde31f9aec4e08ec88787e680b404381b33134987a",
       "generated": false
+    },
+    {
+      "path": "rust/AGENTS.md",
+      "sha256": "9a52e0a6513f97a8828bdc6210a84ddf881d64980a907df6e7ba63824a463bf1",
+      "generated": true
     },
     {
       "path": "rust/Cargo.toml",
@@ -1685,13 +1785,18 @@
       "generated": true
     },
     {
+      "path": "rust/src/logging/init.rs",
+      "sha256": "4ca602992ad3de07b4f935465499ef2607b2212eda0bf53ed347905aee60740e",
+      "generated": true
+    },
+    {
       "path": "rust/src/logging/layer.rs",
       "sha256": "5ef36623e2a8648585d78760f8d40b504768b866e998b449740def44d3533038",
       "generated": true
     },
     {
       "path": "rust/src/logging/mod.rs",
-      "sha256": "a6bba9f6c2d898bcaf261110dd335af7d6a0b572968bc580872ab1749130e781",
+      "sha256": "af86bbd14336ebad35b7a71142c4458b7e9a31c1c9c88ee27d7b30021dbef885",
       "generated": true
     },
     {
@@ -1820,6 +1925,11 @@
       "generated": true
     },
     {
+      "path": "rust/tests/logging_init.rs",
+      "sha256": "a78cf76a8a57ca36861ac1154c08b700699ba2c36e027746d01874ad71cade28",
+      "generated": true
+    },
+    {
       "path": "rust/tests/logging_query.rs",
       "sha256": "c71fd58a0e4fbbabc405a0249770fe34a876fd237e2689cbbe09a984dac456dc",
       "generated": true
@@ -1853,6 +1963,11 @@
       "path": "typescript/.prettierrc.json",
       "sha256": "ac5868af5fec64d1f0285340fd1b9f3536e387a9bd626d9e87ff6fb1098905b1",
       "generated": false
+    },
+    {
+      "path": "typescript/AGENTS.md",
+      "sha256": "51264758734a3012b84a361d798a2a828c07da8c50b08a35f3519f97523c2c41",
+      "generated": true
     },
     {
       "path": "typescript/Makefile",
@@ -1896,7 +2011,7 @@
     },
     {
       "path": "typescript/package.json",
-      "sha256": "16678926d701ba637974fa4e036673d7b44035ba95631dbd2fd95fe9f0ec8af4",
+      "sha256": "47a32d7d435cb49d0c5d99626c731d2bb8ec577cf3f09615e1911d09b6f6dddf",
       "generated": false
     },
     {
@@ -1976,12 +2091,17 @@
     },
     {
       "path": "typescript/src/core/version.ts",
-      "sha256": "084d9bde1c1f1faad099375e9ec9c3a597a794b8d0d570a0e0497fdb486dcfc0",
+      "sha256": "b630047bc5ce3d89744cbdaae75a344dd113a4659bded33b65657e33e7ba49e9",
       "generated": true
     },
     {
       "path": "typescript/src/index.ts",
       "sha256": "d60ada6f1e01f6b5104cdb75015be93d37c228086cc5523aacd7cf314434a1db",
+      "generated": false
+    },
+    {
+      "path": "typescript/src/logging-connect.ts",
+      "sha256": "4037493968032cbe242a87a2feef073130d629bc5f3843c5c49466fa1b6a6fc8",
       "generated": false
     },
     {
@@ -1996,7 +2116,12 @@
     },
     {
       "path": "typescript/src/logging/index.ts",
-      "sha256": "6b0cca90aebdba42f3bb6b50ff03c20dd4c0cce5d59ab9b4144b077f0fd93b2d",
+      "sha256": "43f8d36affdda4911ec08ed9043078fcdb77b919f1706af5bc1b6724c9d22a05",
+      "generated": true
+    },
+    {
+      "path": "typescript/src/logging/init.ts",
+      "sha256": "6ca9bc473329164c23b4c8f7f0e8e99b079ee5aca30f702045aaaf6e99c191b0",
       "generated": true
     },
     {
@@ -2022,6 +2147,11 @@
     {
       "path": "typescript/src/logging/redaction.ts",
       "sha256": "63166e5621d39f49b635dc9757d39c28d985bc8e90c676b366ab8f81800ebb87",
+      "generated": true
+    },
+    {
+      "path": "typescript/src/logging/request.ts",
+      "sha256": "876bcd0c06489e4bf680eaf9a1b44ff8028dcca27148148d9fb4ab9d61509f29",
       "generated": true
     },
     {
@@ -2130,6 +2260,11 @@
       "generated": true
     },
     {
+      "path": "typescript/test/logging-connect.test.ts",
+      "sha256": "d7bd71d32be8a42870461db4909ea8528e2e7c9bc12ab132c35cac2049126246",
+      "generated": false
+    },
+    {
       "path": "typescript/test/logging/adapters.test.ts",
       "sha256": "7d9d38d1895dba391ee661233d28402675d70c6acaaea8eda54c73d029582d3a",
       "generated": true
@@ -2147,6 +2282,11 @@
     {
       "path": "typescript/test/logging/conformance.test.ts",
       "sha256": "076e6f771d6472253ae69b6902e4f30181e6fd71e43622da490abf9b4a0bbae1",
+      "generated": true
+    },
+    {
+      "path": "typescript/test/logging/init.test.ts",
+      "sha256": "d720fc3284849c31699cbc176ee246862d0b71fba76a1877df0d136e3a2cf6e9",
       "generated": true
     },
     {
